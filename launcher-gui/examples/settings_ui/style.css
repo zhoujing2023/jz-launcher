@@ -1,0 +1,30 @@
+.app_name {
+    font-size: 32px;
+    font-weight: 900;
+    color: #6a6a6a;
+    text-shadow: 0 0 7px #fff,
+    0 0 10px #fff,
+    0 0 21px #fff,
+    0 0 42px #0fa,
+    0 0 82px #0fa,
+    0 0 92px #0fa,
+    0 0 102px #0fa,
+    0 0 151px #0fa;
+    letter-spacing: 4px;
+}
+
+.desktop-paths-list-view-enabled {
+    background: @theme_base_color;
+    border-radius: 5px;
+    border: 1px solid #d57f7f;
+    font-size: 16px;
+    padding: 2px 4px;
+}
+
+.desktop-paths-list-view-disabled {
+    background: @insensitive_bg_color;
+    border-radius: 5px;
+    border: 1px solid @borders;
+    font-size: 16px;
+    padding: 2px 4px;
+}

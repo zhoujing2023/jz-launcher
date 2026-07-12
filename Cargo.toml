@@ -1,0 +1,7 @@
+[workspace]
+members = [
+    "launcher-core",
+    "launcher-gui",
+]
+
+resolver = "2"

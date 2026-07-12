@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- resources.gresource.xml 资源清单 -->
+<!-- 这个 XML 文件告诉构建工具，哪些文件（比如：window.ui）需要被打包，以及它们最终在程序内部以什么路径（prefix）和名称被访问 -->
+<!-- 以下例子中 window.ui 最终会被打包，并在程序中通过 resource:///org/gtk_rs/example/window.ui 这个 URI 来访问 -->
+<gresources>
+    <gresource prefix="/org/zhoujing/jz_tools/">
+        <file compressed="true" preprocess="xml-stripblanks">ui/window.ui</file>
+        <file compressed="true" preprocess="xml-stripblanks">ui/search-result-item.ui</file>
+        <file compressed="true">css/style.css</file>
+    </gresource>
+</gresources>

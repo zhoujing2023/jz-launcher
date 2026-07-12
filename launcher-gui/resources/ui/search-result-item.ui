@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+    <template class="SearchResultItem" parent="GtkBox">
+        <property name="orientation">horizontal</property>
+        <property name="spacing">10</property>
+        <property name="margin-start">5</property>
+        <property name="margin-end">5</property>
+        <style>
+            <class name="search-result-item-box-row"/>
+        </style>
+        <child>
+            <object class="GtkImage" id="icon">
+                <property name="pixel_size">50</property>
+            </object>
+        </child>
+        <child>
+            <object class="GtkBox">
+                <property name="orientation">vertical</property>
+                <property name="spacing">5</property>
+                <style>
+                    <class name="search-result-item-text-box"/>
+                </style>
+                <child>
+                    <object class="GtkLabel" id="name_label">
+                        <property name="halign">start</property>
+                        <!-- 设置最大可显示字数为50，超出则显示省略号 -->
+                        <property name="max_width_chars">50</property>
+                        <property name="ellipsize">end</property>
+                    </object>
+                </child>
+                <child>
+                    <object class="GtkLabel" id="comment_label">
+                        <property name="halign">start</property>
+                        <property name="max_width_chars">50</property>
+                        <property name="ellipsize">end</property>
+                    </object>
+                </child>
+            </object>
+        </child>
+    </template>
+</interface>

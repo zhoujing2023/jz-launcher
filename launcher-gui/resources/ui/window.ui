@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+    <template class="JzToolGtkWindow" parent="GtkApplicationWindow">
+        <property name="decorated">False</property>
+        <property name="title">JzTools</property>
+        <property name="default-width">500</property>
+        <property name="default-height">66</property>
+        <property name="resizable">True</property>
+        <property name="name">main-box</property>
+        <child>
+            <object class="GtkBox" id="main_box">
+                <property name="orientation">vertical</property>
+                <property name="margin-top">8</property>
+                <property name="margin-bottom">8</property>
+                <property name="margin-start">8</property>
+                <property name="margin-end">8</property>
+                <child>
+                    <object class="GtkEntry" id="entry">
+                        <property name="name">search-entry</property>
+                        <property name="width_request">200</property>
+                        <property name="height_request">50</property>
+                    </object>
+                </child>
+                <child>
+                    <object class="GtkScrolledWindow" id="scrolled_window">
+                        <property name="hscrollbar-policy">never</property>
+                        <property name="vscrollbar-policy">automatic</property>
+                        <property name="propagate-natural-height">True</property>
+                        <property name="max-content-height">400</property>
+                        <child>
+                            <object class="GtkListView" id="result_list">
+                                <property name="valign">start</property>
+                            </object>
+                        </child>
+                    </object>
+                </child>
+            </object>
+        </child>
+    </template>
+</interface>

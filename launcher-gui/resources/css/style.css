@@ -1,0 +1,34 @@
+window#main-box {
+    border-radius: 8px;
+}
+
+entry#search-entry {
+    font-size: 18px;
+}
+
+box.search-result-item-box-row {
+    margin: 3px 0;
+}
+
+/* 搜索结果项的名称和说明进行样式修饰 */
+box.search-result-item-text-box > label:first-child {
+    font-size: 18px;
+}
+
+box.search-result-item-text-box > label:nth-child(2) {
+    font-size: 14px;
+}
+
+listview > row {
+    margin: 3px 0;
+    border-radius: 8px;
+}
+
+listview > row:hover {
+    /* 使用系统主题背景色 */
+    background-color: alpha(@theme_selected_bg_color, 0.2);
+}
+
+listview > row:selected {
+    background-color: alpha(@theme_selected_bg_color, 0.3);
+}

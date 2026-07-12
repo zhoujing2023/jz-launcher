@@ -1,0 +1,18 @@
+{
+  "general": {
+    "auto_start_at_boot": true,
+    "desktop_scan_path": [
+      "${HOME}/.local/share/applications",
+      "/usr/share/applications",
+      "/var/lib/snapd/desktop/applications"
+    ]
+  },
+  "appearance": {
+    "theme": 2,
+    "font_size": 13.0
+  },
+  "shortcut": {
+    "hotkey": "<Shift>space",
+    "close": "<Control>q"
+  }
+}
