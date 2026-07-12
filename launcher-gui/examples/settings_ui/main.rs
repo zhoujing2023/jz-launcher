@@ -534,22 +534,22 @@ fn build_about_page() -> Box {
         .build();
 
     let github_button = LinkButton::builder()
-        .uri("https://github.com/zhoujing2023/JzTools")
+        .uri("https://github.com/zhoujing2023/jz-launcher.git")
         .label("")
         .child(
             &gtk::Image::builder()
-                .file("examples/settings_ui/github.svg")
+                .file("launcher-gui/examples/settings_ui/github.svg")
                 .pixel_size(48)
                 .build(),
         )
         .build();
 
     let gitee_button = LinkButton::builder()
-        .uri("https://gitee.com/FanGccU/jian_box")
+        .uri("https://gitee.com/FanGccU/jz-launcher.git")
         .label("")
         .child(
             &gtk::Image::builder()
-                .file("examples/settings_ui/gitee.svg")
+                .file("launcher-gui/examples/settings_ui/gitee.svg")
                 .pixel_size(48)
                 .build(),
         )

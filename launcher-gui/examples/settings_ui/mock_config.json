@@ -1,6 +1,6 @@
 {
   "general": {
-    "auto_start_at_boot": true,
+    "auto_start_at_boot": false,
     "desktop_scan_path": [
       "${HOME}/.local/share/applications",
       "/usr/share/applications",
@@ -9,7 +9,7 @@
   },
   "appearance": {
     "theme": 2,
-    "font_size": 13.0
+    "font_size": 12.0
   },
   "shortcut": {
     "hotkey": "<Shift>space",

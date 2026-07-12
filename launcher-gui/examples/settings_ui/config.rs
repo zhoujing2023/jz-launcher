@@ -55,7 +55,7 @@ impl Config {
         // let config_path = dirs::config_dir()
         //     .unwrap_or_else(|| PathBuf::from("."))
         //     .join("jz_tools/config.json");
-        let config_path = PathBuf::from("examples/settings_ui/mock_config.json");
+        let config_path = PathBuf::from("launcher-gui/examples/settings_ui/mock_config.json");
         if let Ok(content) = std::fs::read_to_string(&config_path) {
             if let Ok(config) = serde_json::from_str::<Config>(&content) {
                 return config;
@@ -74,7 +74,7 @@ impl Config {
         //     .join("jz_tools");
         // std::fs::create_dir_all(&config_path)?;
         // let config_path = config_path.join("config.json");
-        let config_path = PathBuf::from("examples/settings_ui/mock_config.json");
+        let config_path = PathBuf::from("launcher-gui/examples/settings_ui/mock_config.json");
         let json = serde_json::to_string_pretty(self)?;
         std::fs::write(config_path, json)?;
         Ok(())
