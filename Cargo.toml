@@ -5,3 +5,6 @@ members = [
 ]
 
 resolver = "2"
+
+# 默认打包成员
+default-members = ["launcher-gui"]

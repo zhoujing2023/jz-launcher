@@ -1,0 +1,13 @@
+[Desktop Entry]
+Name=JzLauncher
+Comment=Linux桌面应用启动器
+Comment[zh_CN]=Linux桌面应用启动器
+GenericName=Application Launcher
+Exec=jz-launcher
+Icon=jz-launcher
+Type=Application
+Categories=Utility;System;
+Keywords=launcher;tools;launcher-gui;
+Terminal=false
+StartupNotify=true
+StartupWMClass=org.zhoujing.jz-launcher

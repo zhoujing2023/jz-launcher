@@ -2,6 +2,9 @@
 name = "launcher-gui"
 version = "0.1.0"
 edition = "2024"
+description = "Linux 桌面程序启动器"
+license = "MIT"
+authors = ["Zhou Jing <helloworldzhoujing@163.com>"]
 
 [dependencies]
 launcher-core = {path = "../launcher-core"}
@@ -26,3 +29,32 @@ path = "examples/launcher_ui_v0_2/main.rs"
 name = "settings_ui"
 path = "examples/settings_ui/main.rs"
 
+
+# 指定二进制文件名（可选）
+[[bin]]
+name = "jz-launcher"
+path = "src/main.rs"
+
+# Deb 打包配置
+[package.metadata.deb]
+name = "jz-launcher"
+maintainer = "Zhou Jing <helloworldzhoujing@163.com>"
+depends = "libgtk-4-1, libadwaita-1-0, libglib2.0-0"
+
+# 手动包含二进制文件
+[[package.metadata.deb.assets]]
+source = "../target/release/jz-launcher"
+dest = "/usr/bin/jz-launcher"
+mode = "755"
+
+# 图标
+[[package.metadata.deb.assets]]
+source = "resources/icon/jz-launcher.svg"
+dest = "/usr/share/icons/hicolor/scalable/apps/jz-launcher.svg"
+mode = "644"
+
+# .desktop 文件
+[[package.metadata.deb.assets]]
+source = "resources/jz-launcher.desktop"
+dest = "/usr/share/applications/jz-launcher.desktop"
+mode = "644"
