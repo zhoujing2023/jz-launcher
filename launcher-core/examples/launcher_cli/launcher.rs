@@ -107,7 +107,7 @@ impl Launcher {
             }
 
             // 打开应用程序
-            AppRunner::run(&application.exec);
+            AppRunner::run(&application.exec_cmd);
         }
     }
 }

@@ -465,6 +465,7 @@ dependencies = [
  "glib",
  "glib-build-tools",
  "gtk4",
+ "launcher-core",
  "libadwaita",
  "serde",
  "serde_json",

@@ -7,7 +7,7 @@ pub struct AppEntry {
     // 应用名称
     pub name: String,
     // 执行应用程序路径（如：/usr/bin/wechat %U）
-    pub exec: String,
+    pub exec_cmd: String,
     // desktop 路径
     pub desktop_file: String,
     // 搜索词
@@ -15,7 +15,7 @@ pub struct AppEntry {
     // 说明
     pub comment: String,
     // 图表
-    pub icon: Option<String>,
+    pub icon_path: Option<String>,
     // 分数，用于排序
     pub score: RefCell<u32>,
 }

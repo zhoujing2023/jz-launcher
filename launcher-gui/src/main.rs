@@ -1,16 +1,17 @@
-mod window;
-mod search_result_item;
 mod app_data_object;
-mod mock;
+mod search_result_item;
+mod window;
+mod app_provider;
 
+use glib::ExitCode;
 use gtk::gdk::Display;
 use gtk::gio;
 use gtk::prelude::{ApplicationExt, ApplicationExtManual, GtkApplicationExt, GtkWindowExt};
 use window::Window;
 
-const APP_ID: &str = "org.zhoujing.jz_tools";
+const APP_ID: &str = "org.zhoujing.jz-launcher";
 
-fn main() {
+fn main() -> ExitCode {
     // 注册 GResource 资源
     gio::resources_register_include!("org.zhoujing.storage").expect("Failed to register resources");
 
@@ -21,11 +22,11 @@ fn main() {
     app.connect_startup(|_| {
         load_css();
     });
-    app.set_accels_for_action("window.close", &["<Ctrl>W", "<Ctrl>Q","Escape"]);
+    app.set_accels_for_action("window.close", &["<Ctrl>W", "<Ctrl>Q", "Escape"]);
     app.connect_activate(build_ui);
 
     // 运行应用
-    app.run();
+    app.run()
 }
 
 fn load_css() {

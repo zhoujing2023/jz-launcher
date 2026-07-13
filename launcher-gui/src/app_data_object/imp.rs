@@ -11,6 +11,9 @@ pub struct AppDataObject {
     // 应用名称
     #[property(get, set)]
     pub name: RefCell<Option<String>>,
+    // desktop 路径
+    #[property(get, set)]
+    pub desktop_file: RefCell<Option<String>>,
     // 应用Icon
     #[property(get, set)]
     pub icon_path: RefCell<Option<String>>,

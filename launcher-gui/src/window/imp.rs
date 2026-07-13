@@ -1,4 +1,5 @@
 use crate::app_data_object::AppDataObject;
+use crate::app_provider::to_data_object;
 use crate::search_result_item::SearchResultItem;
 use glib::prelude::{Cast, CastNone};
 use glib::subclass::InitializingObject;
@@ -10,6 +11,7 @@ use gtk::subclass::prelude::*;
 use gtk::{
     glib, CompositeTemplate, EventControllerKey, ListItem, SignalListItemFactory, SingleSelection,
 };
+use launcher_core::{AppLoader, AppRunner, AppUsage, Env, SearchEngine};
 use std::cell::RefCell;
 
 // 窗口状态对象
@@ -25,6 +27,9 @@ pub struct Window {
     #[template_child]
     pub result_list: TemplateChild<gtk::ListView>,
     pub app_list: RefCell<Option<ListStore>>,
+    // core 属性
+    env: RefCell<Env>,
+    search_engine: RefCell<SearchEngine>,
 }
 
 // GObject 子类化
@@ -49,11 +54,17 @@ impl ObjectImpl for Window {
     fn constructed(&self) {
         // 先让父类完成构造
         self.parent_constructed();
+
+        // 加载 core 数据： 1.加载环境信息 2.加载应用程序 3.初始化搜索
+        *self.env.borrow_mut() = Env::load().expect("加载环境失败");
+        let env = self.env.borrow();
+        let apps = AppLoader::load(&env);
+        *self.search_engine.borrow_mut() = SearchEngine::new(apps);
+
+        // 配置 gui 数据： 1.配置 ListView 模式和工厂 2.事件绑定 3.初始化控件高度
         self.setup_model();
         self.setup_factory();
-        // 事件绑定
         self.setup_callbacks();
-        // 初始化控件高度
         self.adjust_window_size(0);
     }
 }
@@ -135,8 +146,10 @@ impl Window {
             move |entry| {
                 let search_key = entry.text().to_string();
                 let results = if !search_key.is_empty() {
-                    // TODO: 替换为真实的应用搜索
-                    crate::mock::mock_search_apps(search_key.as_str())
+                    // 查询
+                    let search_engine = obj.imp().search_engine.borrow();
+                    let apps = search_engine.search(&search_key);
+                    apps.iter().map(|app| to_data_object(app)).collect()
                 } else {
                     Vec::new()
                 };
@@ -233,8 +246,23 @@ impl Window {
         let exec_cmd = app_info
             .exec_cmd()
             .expect("获取 App_Info 中的 exec_cmd 属性失败，数据为空");
-        println!("exec: {}", exec_cmd);
-        // TODO: 实现执行指令逻辑
+        AppRunner::run(&exec_cmd);
+        // 更新应用分数
+        self.record_launch(app_info);
+    }
+
+    /// `record_launch` 更新应用分数
+    fn record_launch(&self, app_info: &AppDataObject) {
+        let search_engine = self.search_engine.borrow();
+        let apps = search_engine.get_apps();
+        if let Some(desktop_file) = app_info.desktop_file() {
+            if let Some(application) = apps.iter().find(|app| app.desktop_file == desktop_file) {
+                let mut usage = AppUsage::default();
+                if let Err(err) = usage.record_launch(&self.env.borrow(), application, apps) {
+                    eprintln!("更新分数失败：{}", err);
+                }
+            }
+        }
     }
 
     /// `update_search_result` 更新搜索结果列表

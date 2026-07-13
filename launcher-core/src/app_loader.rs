@@ -167,7 +167,7 @@ impl AppLoader {
             .map(|line| line.to_string())
         {
             if let Some(exec_value) = exec.strip_prefix("Exec=") {
-                app_entry.exec = exec_value.to_string();
+                app_entry.exec_cmd = exec_value.to_string();
             }
         } else {
             return None;
@@ -179,7 +179,7 @@ impl AppLoader {
             .map(|line| line.to_string())
         {
             if let Some(icon_value) = icon.strip_prefix("Icon=") {
-                app_entry.icon = Some(icon_value.to_string());
+                app_entry.icon_path = Some(icon_value.to_string());
             }
         }
 

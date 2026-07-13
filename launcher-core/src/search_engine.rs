@@ -1,5 +1,6 @@
 use crate::model::{AppEntry, Apps};
 
+#[derive(Default)]
 pub struct SearchEngine {
     apps: Apps,
 }
