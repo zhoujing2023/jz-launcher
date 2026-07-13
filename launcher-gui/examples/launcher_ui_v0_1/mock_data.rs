@@ -4,16 +4,16 @@ use crate::AppDataObject;
 pub fn mock_app_list() -> Vec<AppDataObject> {
     vec![
         AppDataObject::new(
-            "GIMP",
-            "/home/zhoujing/Applications/icons/gimp.png",
-            "/home/zhoujing/Applications/GIMP-3.2.4-x86_64.AppImage",
-            "开源的图形处理程序",
+            "VLC media player",
+            "vlc",
+            "/usr/bin/vlc --started-from-file",
+            "读取、捕获、广播您的多媒体流",
         ),
         AppDataObject::new(
             "Krita",
-            "/home/zhoujing/Applications/icons/krita.svg",
+            "krita",
             "env QT_QPA_PLATFORM=wayland krita",
-            "自由开源的数字绘画程序",
+            "数字绘画程序",
         ),
         AppDataObject::new(
             "ChatGpt",

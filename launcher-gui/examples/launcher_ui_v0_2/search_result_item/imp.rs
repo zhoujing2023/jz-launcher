@@ -43,10 +43,9 @@ impl ObjectImpl for SearchResultItem {
             .orientation(gtk::Orientation::Vertical)
             .spacing(4)
             .build();
-        let name_label = Label::builder()
+        let name_label = Label::builder().halign(gtk::Align::Start).build();
+        let comment_label = Label::builder()
             .halign(gtk::Align::Start)
-            .build();
-        let comment_label = Label::builder().halign(gtk::Align::Start)
             .max_width_chars(40)
             .ellipsize(EllipsizeMode::End)
             .build();
@@ -75,13 +74,20 @@ impl SearchResultItem {
                 .sync_create()
                 .build();
             app_data
-                .bind_property("icon", &*self.icon.borrow(), "file")
-                .sync_create()
-                .build();
-            app_data
                 .bind_property("comment", &*self.comment_label.borrow(), "label")
                 .sync_create()
                 .build();
+            if let Some(icon) = app_data.icon() {
+                let icon = if icon.contains('/') {
+                    "file"
+                } else {
+                    "icon-name"
+                };
+                app_data
+                    .bind_property("icon", &*self.icon.borrow(), icon)
+                    .sync_create()
+                    .build();
+            }
         }
     }
 }

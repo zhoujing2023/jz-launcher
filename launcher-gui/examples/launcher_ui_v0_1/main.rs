@@ -1,5 +1,6 @@
 mod mock_data;
 
+use crate::mock_data::mock_app_list;
 use adw::Application;
 use adw::gdk::Key;
 use adw::prelude::{ApplicationExt, ApplicationExtManual};
@@ -14,7 +15,6 @@ use gtk::{
     Align, ApplicationWindow, Box, CssProvider, Entry, EventControllerKey, Image, Label, ListBox,
     ListBoxRow, Orientation,
 };
-use crate::mock_data::mock_app_list;
 
 const APP_ID: &str = "debug.zhoujing.jz_tools";
 
@@ -120,8 +120,12 @@ fn setup_entry_changed_callback(
                 .filter(|app| app.name.to_lowercase().contains(&keyword.to_lowercase()))
                 .collect();
             for (index, app) in apps.iter().enumerate() {
-                let icon = Image::builder().file(&app.icon).pixel_size(50).build();
-
+                let icon = Image::builder().pixel_size(50).build();
+                if app.icon.contains('/') {
+                    icon.set_from_file(Some(&app.icon));
+                } else {
+                    icon.set_icon_name(Some(&app.icon));
+                }
                 let name_label = Label::builder()
                     .label(&app.name)
                     .halign(Align::Start)
