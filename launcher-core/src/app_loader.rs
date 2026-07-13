@@ -62,7 +62,7 @@ impl AppLoader {
         }
 
         // 读取分数
-        let usage = AppUsage::get_usage(&env);
+        let usage = AppUsage::load(&env);
         if !usage.scores.is_empty() {
             for app in &mut apps {
                 *app.score.borrow_mut() = usage.scores.get(&app.desktop_file).copied().unwrap_or(0);

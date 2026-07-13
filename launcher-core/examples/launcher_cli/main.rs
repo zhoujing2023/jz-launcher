@@ -5,7 +5,7 @@ use launcher_core::{AppLoader, Env, SearchEngine};
 pub mod launcher;
 
 fn main() -> anyhow::Result<()> {
-    let env = Env::get_env().context("获取环境数据失败")?;
+    let env = Env::load().context("获取环境数据失败")?;
     println!("获取环境数据成功：\n{:#?}", env);
     println!("********* 开始检索 desktop *********");
     let apps = AppLoader::load(&env);

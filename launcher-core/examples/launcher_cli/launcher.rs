@@ -1,5 +1,5 @@
-use launcher_core::AppUsage;
 use launcher_core::AppRunner;
+use launcher_core::AppUsage;
 use launcher_core::Env;
 use launcher_core::SearchEngine;
 use std::io::{Write, stdin, stdout};
@@ -99,8 +99,9 @@ impl Launcher {
                 None => continue,
             };
             // 更新应用分数并保存
+            let mut usage = AppUsage::default();
             if let Err(err) =
-                AppUsage::record_launch(&env, *application, &self.search_engine.get_apps())
+                usage.record_launch(&env, *application, &self.search_engine.get_apps())
             {
                 eprintln!("更新应用分数失败：{}", err);
             }
