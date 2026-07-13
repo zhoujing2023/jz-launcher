@@ -10,14 +10,14 @@ impl AppDataObject {
     pub fn new(
         name: &str,
         desktop_file: &str,
-        icon_path: &str,
+        icon: &str,
         exec_cmd: &str,
         comment: &str,
     ) -> Self {
         Object::builder()
             .property("name", name)
             .property("desktop_file", desktop_file)
-            .property("icon_path", icon_path)
+            .property("icon", icon)
             .property("exec_cmd", exec_cmd)
             .property("comment", comment)
             .build()

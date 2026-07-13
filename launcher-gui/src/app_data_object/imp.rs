@@ -16,7 +16,7 @@ pub struct AppDataObject {
     pub desktop_file: RefCell<Option<String>>,
     // 应用Icon
     #[property(get, set)]
-    pub icon_path: RefCell<Option<String>>,
+    pub icon: RefCell<Option<String>>,
     // 描述
     #[property(get, set)]
     pub comment: RefCell<Option<String>>,
