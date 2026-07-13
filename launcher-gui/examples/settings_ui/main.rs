@@ -517,7 +517,7 @@ fn build_about_page() -> Box {
         .valign(gtk::Align::Center)
         .build();
     let app_name = Label::builder()
-        .label("JZTools")
+        .label("JzLauncher")
         .halign(gtk::Align::Center)
         .css_classes(vec!["app_name"])
         .build();
@@ -558,7 +558,7 @@ fn build_about_page() -> Box {
     code_repository_box.append(&gitee_button);
 
     let comment = Label::builder()
-        .label("一款为 Linux 桌面打造的开源工具箱")
+        .label("Linux 桌面程序启动器")
         .build();
 
     page.append(&app_name);
