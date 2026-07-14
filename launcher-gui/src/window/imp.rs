@@ -227,6 +227,10 @@ impl Window {
     /// `handle_list_navigation` 通过 Up / Down 键切换选中的列表项
     fn handle_list_navigation(&self, key: Key) {
         let selection = self.get_selection();
+        if selection.n_items() < 1 {
+            // 结果项为空，不执行操作
+            return;
+        }
         let selected_index = selection.selected() as i32;
         let new_selected = if key == Key::Up {
             selected_index - 1

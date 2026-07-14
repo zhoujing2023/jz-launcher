@@ -224,6 +224,10 @@ fn setup_entry_keyboard_navigation_callback(
 
 /// 处理 Up / Down 键切换列表选择项
 fn handle_list_navigation(key: Key, selection: &SingleSelection, list_view: &ListView) {
+    if selection.n_items() < 1 {
+        // 结果项为空，不执行操作
+        return;
+    }
     let selected_index = selection.selected() as i32;
     let new_selected_index = if key == Key::Up {
         selected_index - 1
