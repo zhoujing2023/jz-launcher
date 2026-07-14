@@ -11,7 +11,7 @@ use gtk::pango::EllipsizeMode;
 use gtk::prelude::{BoxExt, EditableExt, EntryExt, GtkApplicationExt, GtkWindowExt, ListBoxRowExt, WidgetExt};
 use gtk::{Align, ApplicationWindow, Box, CssProvider, Entry, EventControllerKey, Image, Label, ListBox, ListBoxRow, Orientation};
 
-const APP_ID: &str = "debug.zhoujing.jz_tools";
+const APP_ID: &str = "debug.zhoujing.jz-launcher";
 
 pub struct AppDataObject {
     pub name: String,

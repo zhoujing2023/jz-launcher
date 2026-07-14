@@ -8,7 +8,7 @@ use gtk::subclass::widget::WidgetClassExt;
 use gtk::{CompositeTemplate, TemplateChild};
 
 #[derive(Default, CompositeTemplate)]
-#[template(resource = "/org/zhoujing/jz_tools/ui/search-result-item.ui")]
+#[template(resource = "/org/zhoujing/jz-launcher/ui/search-result-item.ui")]
 pub struct SearchResultItem {
     #[template_child]
     pub icon: TemplateChild<gtk::Image>,

@@ -1,13 +1,15 @@
 use crate::app_data_object::AppDataObject;
 use crate::app_provider::to_data_object;
 use crate::search_result_item::SearchResultItem;
-use adw::prelude::ListModelExt;
+use adw::gdk;
+use adw::gdk::Display;
+use adw::prelude::{DisplayExt, ListModelExt, MonitorExt};
 use glib::Propagation;
 use glib::prelude::{Cast, CastNone};
 use glib::subclass::InitializingObject;
 use gtk::gdk::Key;
 use gtk::gio::ListStore;
-use gtk::prelude::{EditableExt, EntryExt, GtkWindowExt, ListItemExt, WidgetExt};
+use gtk::prelude::{ButtonExt, EditableExt, EntryExt, GtkWindowExt, ListItemExt, WidgetExt};
 use gtk::subclass::prelude::*;
 use gtk::{
     CompositeTemplate, EventControllerKey, ListItem, ListScrollFlags, SignalListItemFactory,
@@ -18,12 +20,14 @@ use std::cell::RefCell;
 
 // 窗口状态对象
 #[derive(CompositeTemplate, Default)]
-#[template(resource = "/org/zhoujing/jz_tools/ui/window.ui")]
+#[template(resource = "/org/zhoujing/jz-launcher/ui/window.ui")]
 pub struct Window {
+    #[template_child]
+    pub background_button: TemplateChild<gtk::Button>,
     #[template_child]
     pub main_box: TemplateChild<gtk::Box>,
     #[template_child]
-    pub entry: TemplateChild<gtk::Entry>,
+    pub search_entry: TemplateChild<gtk::Entry>,
     #[template_child]
     pub scrolled_window: TemplateChild<gtk::ScrolledWindow>,
     #[template_child]
@@ -37,7 +41,7 @@ pub struct Window {
 // GObject 子类化
 #[glib::object_subclass]
 impl ObjectSubclass for Window {
-    const NAME: &'static str = "JzToolGtkWindow";
+    const NAME: &'static str = "MyGtkWindow";
     type Type = super::Window;
     type ParentType = gtk::ApplicationWindow;
 
@@ -63,11 +67,11 @@ impl ObjectImpl for Window {
         let apps = AppLoader::load(&env);
         *self.search_engine.borrow_mut() = SearchEngine::new(apps);
 
-        // 配置 gui 数据： 1.配置 ListView 模式和工厂 2.事件绑定 3.初始化控件高度
+        // 配置 gui 数据： 1.配置 ListView 模式和工厂 2.事件绑定 3.初始化控件样式
         self.setup_model();
         self.setup_factory();
         self.setup_callbacks();
-        self.adjust_window_size(0);
+        self.init_widget_style();
     }
 }
 
@@ -77,6 +81,29 @@ impl ApplicationWindowImpl for Window {}
 
 // 自定义方法实现
 impl Window {
+    fn init_widget_style(&self) {
+        let (screen_width, screen_height) = Self::get_screen_size();
+        let main_box_margin_top = (screen_height as f64 * 0.20) as i32;
+        self.main_box.get().set_margin_top(main_box_margin_top);
+
+        let window = self.obj();
+        window.set_default_width(screen_width);
+        window.set_default_height(screen_height);
+    }
+
+    /// `get_screen_size` 获取屏幕大小（宽高）
+    fn get_screen_size() -> (i32, i32) {
+        let display = Display::default().expect("无法连接到显示器");
+        // 获取所有显示器列表中索引为 0 的显示器 (通常是主显示器)
+        let monitors = display.monitors();
+        let monitor = monitors
+            .item(0)
+            .and_downcast::<gdk::Monitor>()
+            .expect("无法获取主显示器");
+        let geo = monitor.geometry();
+        (geo.width(), geo.height())
+    }
+
     /// `get_app_list` 获取“搜索结果列表”数据模型
     fn get_app_list(&self) -> ListStore {
         self.app_list
@@ -132,17 +159,36 @@ impl Window {
 
     /// `setup_callbacks` 集中配置回调事件
     fn setup_callbacks(&self) {
+        self.setup_window_show_callbacks();
+        self.setup_background_button_clicked_callbacks();
         self.setup_entry_changed_callbacks();
         self.setup_keyboard_navigation_callbacks();
-        self.setup_entry_activate_callbacks();
+        self.setup_search_entry_activate_callbacks();
         self.setup_list_view_connect_activate_callbacks();
+    }
+
+    /// 搜索栏获取焦点
+    fn setup_window_show_callbacks(&self) {
+        let search_entry_clone = self.search_entry.clone();
+        let window = self.obj();
+        window.connect_show(move |_| {
+            search_entry_clone.grab_focus();
+        });
+    }
+
+    /// 关闭
+    fn setup_background_button_clicked_callbacks(&self) {
+        let window = self.obj().clone();
+        self.background_button.connect_clicked(move |_| {
+            window.close();
+        });
     }
 
     /// `setup_entry_changed_callbacks` 配置“搜索框内容更新”事件
     /// 1.查询。2.更新列表UI
     fn setup_entry_changed_callbacks(&self) {
         let obj = self.obj();
-        self.entry.connect_changed(glib::clone!(
+        self.search_entry.connect_changed(glib::clone!(
             #[weak]
             obj,
             move |entry| {
@@ -181,14 +227,14 @@ impl Window {
             }
         ));
         // 将键盘控制器事件添加至搜索栏上
-        self.entry.get().add_controller(controller);
+        self.search_entry.get().add_controller(controller);
     }
 
-    /// `setup_entry_activate_callbacks` 配置“搜索栏”激活事件
+    /// `setup_search_entry_activate_callbacks` 配置“搜索栏”激活事件
     /// 运行选中项的执行指令
-    fn setup_entry_activate_callbacks(&self) {
+    fn setup_search_entry_activate_callbacks(&self) {
         let obj = self.obj();
-        self.entry.connect_activate(glib::clone!(
+        self.search_entry.connect_activate(glib::clone!(
             #[weak]
             obj,
             move |_entry| {
@@ -283,42 +329,9 @@ impl Window {
     fn update_search_result(&self, apps: Vec<AppDataObject>) {
         // 清空旧结果
         self.get_app_list().remove_all();
-
         for app in &apps {
             self.get_app_list().append(app);
         }
-
-        // 动态调整窗口高度
-        let item_count = apps.len();
-        self.adjust_window_size(item_count);
-    }
-
-    /// `adjust_window_size` 根据搜索结果数量动态调整窗口高度
-    fn adjust_window_size(&self, item_count: usize) {
-        let obj = self.obj();
-
-        // 配置参数（根据实际 UI 调整）
-        const ITEM_HEIGHT: i32 = 66; // 每个列表项高度
-        const HEADER_HEIGHT: i32 = 66; // 输入框(50) + 上下边距(8+8)
-        const MAX_CONTENT_HEIGHT: i32 = 600; // 最大内容高度
-
-        if item_count == 0 {
-            // 没有搜索结果，隐藏滚动区域
-            self.scrolled_window.set_visible(false);
-            obj.set_default_height(HEADER_HEIGHT);
-        } else {
-            // 有搜索结果，显示滚动区域
-            self.scrolled_window.set_visible(true);
-
-            // 计算所需高度
-            let items_height = (item_count as i32) * ITEM_HEIGHT;
-            let content_height = items_height.min(MAX_CONTENT_HEIGHT);
-            let total_height = HEADER_HEIGHT + content_height;
-
-            obj.set_default_height(total_height);
-        }
-
-        // 强制窗口重新布局
-        obj.queue_resize();
+        self.scrolled_window.set_visible(apps.len() > 0);
     }
 }

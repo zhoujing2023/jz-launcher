@@ -5,25 +5,24 @@ mod search_result_item;
 use crate::app_data_object::AppDataObject;
 use crate::mock_data::mock_app_list;
 use crate::search_result_item::SearchResultItem;
-use adw::Application;
 use adw::gdk::Key;
-use adw::prelude::{ApplicationExt, ApplicationExtManual};
+use adw::prelude::{ApplicationExt, ApplicationExtManual, DisplayExt, MonitorExt};
+use adw::{Application, gdk};
 use glib::object::{Cast, CastNone};
 use glib::{ExitCode, Propagation};
 use gtk::gdk::Display;
 use gtk::gio::ListStore;
 use gtk::prelude::{
-    BoxExt, EditableExt, EntryExt, GtkApplicationExt, GtkWindowExt, ListItemExt, ListModelExt,
-    WidgetExt,
+    BoxExt, ButtonExt, EditableExt, EntryExt, GtkApplicationExt, GtkWindowExt, ListItemExt,
+    ListModelExt, WidgetExt,
 };
 use gtk::{
     ApplicationWindow, CssProvider, Entry, EventControllerKey, ListItem, ListView, Orientation,
     SignalListItemFactory, SingleSelection,
 };
 
-const APP_ID: &str = "debug.zhoujing.jz_tools";
+const APP_ID: &str = "debug.zhoujing.jz-launcher";
 
-/// 调试 UI
 fn main() -> ExitCode {
     let app = Application::builder().application_id(APP_ID).build();
     app.connect_startup(|_| {
@@ -36,9 +35,17 @@ fn main() -> ExitCode {
 
 /// `debug_build_ui` 构建调试时的 UI 模板
 fn debug_build_ui(app: &Application) {
+    let (screen_width, screen_height) = get_screen_size();
+    let main_box_margin_top = (screen_height as f64 * 0.20) as i32;
+
     let main_box = gtk::Box::builder()
+        .width_request(400)
+        .halign(gtk::Align::Center)
+        .valign(gtk::Align::Start)
         .orientation(Orientation::Vertical)
+        .margin_top(main_box_margin_top)
         .spacing(5)
+        .css_classes(vec!["main-box"])
         .build();
 
     let search_entry = Entry::builder()
@@ -47,13 +54,14 @@ fn debug_build_ui(app: &Application) {
         .margin_bottom(12)
         .margin_start(12)
         .margin_end(12)
-        .height_request(50)
+        .height_request(60)
         .css_classes(vec!["search-entry"])
         .build();
     main_box.append(&search_entry);
 
     let list_view = ListView::builder()
         .orientation(Orientation::Vertical)
+        .css_classes(vec!["result-list"])
         .build();
 
     // 配置模型
@@ -91,8 +99,9 @@ fn debug_build_ui(app: &Application) {
     list_view.set_factory(Some(&factory));
 
     let scrolled_window = gtk::ScrolledWindow::builder()
-        .max_content_height(400)
+        .max_content_height(600)
         .propagate_natural_height(true)
+        .visible(false)
         .child(&list_view)
         .build();
 
@@ -101,15 +110,40 @@ fn debug_build_ui(app: &Application) {
     let window = ApplicationWindow::builder()
         .application(app)
         .title("Debug Main UI V2")
-        .child(&main_box)
-        .width_request(400)
+        .default_width(screen_width)
+        .default_height(screen_height)
         .decorated(false)
+        .css_classes(vec!["max-window"])
         .build();
 
-    // 初始化控件高度
-    reload_search_list_height(0, &scrolled_window, &window);
+    // 遮罩布局
+    let overlay = gtk::Overlay::builder().build();
+
+    // 透明背景按钮（点击关闭）
+    let background_button = gtk::Button::builder()
+        .css_classes(vec!["background-button"])
+        .hexpand(true)
+        .vexpand(true)
+        .build();
+
+    let window_clone = window.clone();
+    background_button.connect_clicked(move |_| {
+        window_clone.close();
+    });
+
+    overlay.set_child(Some(&background_button));
+    overlay.add_overlay(&main_box);
+
+    window.set_child(Some(&overlay));
+
+    // 窗口显示时聚焦搜索框
+    let search_entry_clone = search_entry.clone();
+    window.connect_show(move |_| {
+        search_entry_clone.grab_focus();
+    });
+
     // 配置搜索栏回调
-    setup_entry_changed_callback(&search_entry, &app_store, &scrolled_window, &window);
+    setup_entry_changed_callback(&search_entry, &app_store, &scrolled_window);
     setup_entry_activate_callback(&search_entry, &selection_model);
     setup_entry_keyboard_navigation_callback(&search_entry, &selection_model, &list_view);
     // 配置列表项回调
@@ -118,20 +152,30 @@ fn debug_build_ui(app: &Application) {
     window.present();
 }
 
+/// `get_screen_size` 获取屏幕大小（宽高）
+fn get_screen_size() -> (i32, i32) {
+    let display = Display::default().expect("无法连接到显示器");
+    // 获取所有显示器列表中索引为 0 的显示器 (通常是主显示器)
+    let monitors = display.monitors();
+    let monitor = monitors
+        .item(0)
+        .and_downcast::<gdk::Monitor>()
+        .expect("无法获取主显示器");
+    let geo = monitor.geometry();
+    (geo.width(), geo.height())
+}
+
 /// 回调-搜索栏数据发生变更时
 fn setup_entry_changed_callback(
     search_entry: &Entry,
     list_store: &ListStore,
     scrolled_window: &gtk::ScrolledWindow,
-    window: &ApplicationWindow,
 ) {
     search_entry.connect_changed(glib::clone!(
         #[strong]
         list_store,
         #[weak]
         scrolled_window,
-        #[weak]
-        window,
         move |entry| {
             // 清空旧数据
             list_store.remove_all();
@@ -140,9 +184,7 @@ fn setup_entry_changed_callback(
             println!("keyword: {}", keyword);
             if keyword.is_empty() {
                 println!("输入的内容为空，取消查询操作");
-                scrolled_window.set_height_request(0);
-                // 刷新控件高度
-                reload_search_list_height(0, &scrolled_window, &window);
+                scrolled_window.set_visible(false);
                 return;
             }
 
@@ -153,23 +195,9 @@ fn setup_entry_changed_callback(
                     }
                 }
             });
-            // 刷新控件高度
-            reload_search_list_height(list_store.n_items(), &scrolled_window, &window);
+            scrolled_window.set_visible(list_store.n_items() > 0);
         }
     ));
-}
-
-/// 强制刷新高度
-/// 注意：window 和 其它控件不同，它是只增不减的类型（只管放大不管缩小），所以此处强制使 window 重新计算高度
-/// 这里的 -1 是个固定值，将 window 高度设置成最小，再通过 queue_resize 根据子控件的高度计算 Window 的高度
-fn reload_search_list_height(
-    item_count: u32,
-    scrolled_window: &gtk::ScrolledWindow,
-    window: &ApplicationWindow,
-) {
-    scrolled_window.set_visible(item_count > 0);
-    window.set_default_size(400, -1);
-    window.queue_resize();
 }
 
 /// 回调-搜索栏被激活时

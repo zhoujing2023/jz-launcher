@@ -6,8 +6,25 @@
 .search-entry {
     font-size: 18px;
     border-radius: 10px;
+    color: @theme_text_color;
 }
 
-window {
+.max-window {
     border-radius: 10px;
+    background: transparent;
+}
+
+.background-button {
+    border: none;
+    box-shadow: none;
+    background: transparent;
+}
+
+.main-box {
+    border-radius: 10px;
+    background: @theme_bg_color;
+}
+
+.result-list {
+    border-radius: 0 0 10px 10px;
 }

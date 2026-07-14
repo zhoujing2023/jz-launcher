@@ -31,10 +31,10 @@ fn main() -> ExitCode {
 
 fn load_css() {
     let provider = gtk::CssProvider::new();
-    provider.load_from_resource("/org/zhoujing/jz_tools/css/style.css");
+    provider.load_from_resource("/org/zhoujing/jz-launcher/css/style.css");
 
     gtk::style_context_add_provider_for_display(
-        &Display::default().expect("Failed to get default display"),
+        &Display::default().expect("无法连接到显示器"),
         &provider,
         gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
     )

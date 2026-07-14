@@ -1,6 +1,5 @@
 use crate::app_data_object::AppDataObject;
 
-
 /// 模拟数据
 pub fn mock_app_list() -> Vec<AppDataObject> {
     vec![
@@ -17,10 +16,40 @@ pub fn mock_app_list() -> Vec<AppDataObject> {
             "数字绘画程序",
         ),
         AppDataObject::new(
-            "ChatGpt",
-            "/home/zhoujing/Applications/icons/chatgpt.png",
-            "xdg-open https://chatgpt.com/",
-            "随时随地快速获取答案——ChatGPT可以帮助您寻找书籍推荐、诗歌创作或旅行计划。亲自体验一下吧！",
+            "Vim",
+            "gvim",
+            "vim",
+            "编辑文本文件",
+        ),
+        AppDataObject::new(
+            "Gimp",
+            "/home/zhoujing/Applications/icons/gimp.png",
+            "/home/zhoujing/Applications/GIMP-3.2.4-x86_64.AppImage",
+            "图像处理程序",
+        ),
+        AppDataObject::new(
+            "Blender",
+            "/opt/blender/blender-5.1.1-linux-x64/blender.svg",
+            "/opt/blender/blender-5.1.1-linux-x64/blender",
+            "3D模型处理程序",
+        ),
+        AppDataObject::new(
+            "Visual Studio Code",
+            "vscode",
+            "/usr/share/code/code",
+            "代码编辑器",
+        ),
+        AppDataObject::new(
+            "Google Chrome",
+            "google-chrome",
+            "/usr/bin/google-chrome-stable",
+            "浏览器",
+        ),
+        AppDataObject::new(
+            "Htop",
+            "htop",
+            "htop",
+            "显示系统进程",
         ),
     ]
 }

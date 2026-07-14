@@ -1,34 +1,52 @@
-window#main-window {
-    border-radius: 8px;
+#main-box {
+    border-radius: 10px;
+    background: @theme_bg_color;
 }
 
-entry#search-entry {
-    font-size: 18px;
+#result-list {
+    border-radius: 0 0 10px 10px;
 }
 
-box.search-result-item-box-row {
-    margin: 3px 0;
+#search-entry {
+    font-size: 22px;
+    border-radius: 10px;
+    color: @theme_text_color;
+}
+
+#main-window {
+    border-radius: 10px;
+    background: transparent;
+}
+
+#background-button {
+    border: none;
+    box-shadow: none;
+    background: transparent;
+}
+
+.search-result-item-box-row {
+    margin: 5px 5px;
 }
 
 /* 搜索结果项的名称和说明进行样式修饰 */
-box.search-result-item-text-box > label:first-child {
+.search-result-item-text-box > label:first-child {
     font-size: 18px;
 }
 
-box.search-result-item-text-box > label:nth-child(2) {
+.search-result-item-text-box > label:nth-child(2) {
     font-size: 14px;
 }
 
-listview > row {
+#result-list > row {
     margin: 3px 0;
     border-radius: 8px;
 }
 
-listview > row:hover {
+#result-list > row:hover {
     /* 使用系统主题背景色 */
     background-color: alpha(@theme_selected_bg_color, 0.2);
 }
 
-listview > row:selected {
+#result-list > row:selected {
     background-color: alpha(@theme_selected_bg_color, 0.3);
 }
