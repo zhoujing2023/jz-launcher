@@ -6,7 +6,7 @@
         <property name="default-width">500</property>
         <property name="default-height">66</property>
         <property name="resizable">True</property>
-        <property name="name">main-box</property>
+        <property name="name">main-window</property>
         <child>
             <object class="GtkBox" id="main_box">
                 <property name="orientation">vertical</property>
@@ -26,7 +26,7 @@
                         <property name="hscrollbar-policy">never</property>
                         <property name="vscrollbar-policy">automatic</property>
                         <property name="propagate-natural-height">True</property>
-                        <property name="max-content-height">400</property>
+                        <property name="max-content-height">600</property>
                         <child>
                             <object class="GtkListView" id="result_list">
                                 <property name="valign">start</property>

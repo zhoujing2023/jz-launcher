@@ -5,20 +5,20 @@ mod search_result_item;
 use crate::app_data_object::AppDataObject;
 use crate::mock_data::mock_app_list;
 use crate::search_result_item::SearchResultItem;
+use adw::Application;
 use adw::gdk::Key;
 use adw::prelude::{ApplicationExt, ApplicationExtManual};
-use adw::Application;
 use glib::object::{Cast, CastNone};
 use glib::{ExitCode, Propagation};
 use gtk::gdk::Display;
 use gtk::gio::ListStore;
 use gtk::prelude::{
-    BoxExt, EditableExt, EntryExt, GtkApplicationExt, GtkWindowExt,
-    ListItemExt, ListModelExt, WidgetExt,
+    BoxExt, EditableExt, EntryExt, GtkApplicationExt, GtkWindowExt, ListItemExt, ListModelExt,
+    WidgetExt,
 };
 use gtk::{
-    ApplicationWindow, CssProvider, Entry, EventControllerKey, ListItem, ListView,
-    Orientation, SignalListItemFactory, SingleSelection,
+    ApplicationWindow, CssProvider, Entry, EventControllerKey, ListItem, ListView, Orientation,
+    SignalListItemFactory, SingleSelection,
 };
 
 const APP_ID: &str = "debug.zhoujing.jz_tools";
@@ -103,6 +103,7 @@ fn debug_build_ui(app: &Application) {
         .title("Debug Main UI V2")
         .child(&main_box)
         .width_request(400)
+        .decorated(false)
         .build();
 
     // 初始化控件高度
@@ -110,7 +111,7 @@ fn debug_build_ui(app: &Application) {
     // 配置搜索栏回调
     setup_entry_changed_callback(&search_entry, &app_store, &scrolled_window, &window);
     setup_entry_activate_callback(&search_entry, &selection_model);
-    setup_entry_keyboard_navigation_callback(&search_entry, &selection_model);
+    setup_entry_keyboard_navigation_callback(&search_entry, &selection_model, &list_view);
     // 配置列表项回调
     setup_list_view_row_activated_callback(&list_view, &selection_model);
 
@@ -195,17 +196,23 @@ fn exec_selected_item_app(selection: &SingleSelection) {
 
 /// 回调-搜索栏键盘输入监听
 /// 监听 Up / Down 方向键，控制列表选项上下切换
-fn setup_entry_keyboard_navigation_callback(entry: &Entry, selection: &SingleSelection) {
+fn setup_entry_keyboard_navigation_callback(
+    entry: &Entry,
+    selection: &SingleSelection,
+    list_view: &ListView,
+) {
     let controller = EventControllerKey::new();
     controller.connect_key_pressed(glib::clone!(
         #[weak]
         selection,
+        #[weak]
+        list_view,
         #[upgrade_or]
         Propagation::Proceed,
         move |_controller, key, _code, _state| {
             return match key {
                 Key::Up | Key::Down => {
-                    handle_list_navigation(key, &selection);
+                    handle_list_navigation(key, &selection, &list_view);
                     Propagation::Stop
                 }
                 _ => Propagation::Proceed,
@@ -216,14 +223,18 @@ fn setup_entry_keyboard_navigation_callback(entry: &Entry, selection: &SingleSel
 }
 
 /// 处理 Up / Down 键切换列表选择项
-fn handle_list_navigation(key: Key, selection: &SingleSelection) {
-    let selected_index = selection.selected();
+fn handle_list_navigation(key: Key, selection: &SingleSelection, list_view: &ListView) {
+    let selected_index = selection.selected() as i32;
     let new_selected_index = if key == Key::Up {
         selected_index - 1
     } else {
         selected_index + 1
     };
+    // 限制最小和最大边界
+    let new_selected_index = new_selected_index.max(0) as u32;
+    let new_selected_index = new_selected_index.min(selection.n_items() - 1);
     selection.set_selected(new_selected_index);
+    list_view.scroll_to(new_selected_index, gtk::ListScrollFlags::FOCUS, None);
 }
 
 /// 回调-列表视图激活（双击）

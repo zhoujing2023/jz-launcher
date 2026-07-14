@@ -1,15 +1,17 @@
 use crate::app_data_object::AppDataObject;
 use crate::app_provider::to_data_object;
 use crate::search_result_item::SearchResultItem;
+use adw::prelude::ListModelExt;
+use glib::Propagation;
 use glib::prelude::{Cast, CastNone};
 use glib::subclass::InitializingObject;
-use glib::Propagation;
 use gtk::gdk::Key;
 use gtk::gio::ListStore;
 use gtk::prelude::{EditableExt, EntryExt, GtkWindowExt, ListItemExt, WidgetExt};
 use gtk::subclass::prelude::*;
 use gtk::{
-    glib, CompositeTemplate, EventControllerKey, ListItem, SignalListItemFactory, SingleSelection,
+    CompositeTemplate, EventControllerKey, ListItem, ListScrollFlags, SignalListItemFactory,
+    SingleSelection, glib,
 };
 use launcher_core::{AppLoader, AppRunner, AppUsage, Env, SearchEngine};
 use std::cell::RefCell;
@@ -225,12 +227,20 @@ impl Window {
     /// `handle_list_navigation` 通过 Up / Down 键切换选中的列表项
     fn handle_list_navigation(&self, key: Key) {
         let selection = self.get_selection();
-        let selected_index = selection.selected();
-        if key == Key::Up && selected_index > 0 {
-            selection.set_selected(selected_index - 1);
-        } else if key == Key::Down {
-            selection.set_selected(selected_index + 1);
-        }
+        let selected_index = selection.selected() as i32;
+        let new_selected = if key == Key::Up {
+            selected_index - 1
+        } else {
+            selected_index + 1
+        };
+        // 限制最大/最小范围
+        let new_selected = new_selected.max(0) as u32;
+        let new_selected = new_selected.min(selection.n_items() - 1);
+
+        selection.set_selected(new_selected);
+        self.result_list
+            .get()
+            .scroll_to(new_selected, ListScrollFlags::FOCUS, None);
     }
 
     /// `handle_run_app_cmd` 运行应用程序
@@ -286,7 +296,7 @@ impl Window {
         // 配置参数（根据实际 UI 调整）
         const ITEM_HEIGHT: i32 = 66; // 每个列表项高度
         const HEADER_HEIGHT: i32 = 66; // 输入框(50) + 上下边距(8+8)
-        const MAX_CONTENT_HEIGHT: i32 = 400; // 最大内容高度
+        const MAX_CONTENT_HEIGHT: i32 = 600; // 最大内容高度
 
         if item_count == 0 {
             // 没有搜索结果，隐藏滚动区域

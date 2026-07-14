@@ -1,20 +1,15 @@
 mod mock_data;
 
 use crate::mock_data::mock_app_list;
-use adw::Application;
 use adw::gdk::Key;
 use adw::prelude::{ApplicationExt, ApplicationExtManual};
+use adw::Application;
 use glib::object::CastNone;
 use glib::{ExitCode, Propagation};
 use gtk::gdk::Display;
 use gtk::pango::EllipsizeMode;
-use gtk::prelude::{
-    BoxExt, EditableExt, EntryExt, GtkApplicationExt, GtkWindowExt, ListBoxRowExt, WidgetExt,
-};
-use gtk::{
-    Align, ApplicationWindow, Box, CssProvider, Entry, EventControllerKey, Image, Label, ListBox,
-    ListBoxRow, Orientation,
-};
+use gtk::prelude::{BoxExt, EditableExt, EntryExt, GtkApplicationExt, GtkWindowExt, ListBoxRowExt, WidgetExt};
+use gtk::{Align, ApplicationWindow, Box, CssProvider, Entry, EventControllerKey, Image, Label, ListBox, ListBoxRow, Orientation};
 
 const APP_ID: &str = "debug.zhoujing.jz_tools";
 
@@ -50,8 +45,8 @@ fn main() -> ExitCode {
 /// `debug_build_ui` 构建调试时的 UI 模板
 fn debug_build_ui(app: &Application) {
     let main_box = gtk::Box::builder()
+        .css_classes(vec!["main_box"])
         .orientation(Orientation::Vertical)
-        .spacing(5)
         .build();
 
     let list_box = ListBox::builder()
@@ -77,6 +72,7 @@ fn debug_build_ui(app: &Application) {
         .title("Debug Main UI V1")
         .child(&main_box)
         .width_request(400)
+        .decorated(false)
         .build();
 
     // 配置搜索栏回调
