@@ -185,20 +185,14 @@ impl Window {
 
     /// 窗口显示-信号
     /// 1.聚焦搜索栏
-    /// 2.清空搜索栏中数据
     fn setup_window_show_callback(&self) {
         let search_entry = self.search_entry.get();
-        let app_store = self.get_app_list();
         let window = self.obj();
         window.connect_show(glib::clone!(
             #[weak]
             search_entry,
-            #[weak]
-            app_store,
             move |_| {
                 search_entry.grab_focus();
-                search_entry.set_text("");
-                app_store.remove_all();
             }
         ));
     }
@@ -378,16 +372,22 @@ impl Window {
 
     /// 更新列表数据
     fn update_search_result(&self, apps: Vec<AppDataObject>) {
-        // 清空旧结果
-        self.get_app_list().remove_all();
-        for app in &apps {
-            self.get_app_list().append(app);
+        let store = self.get_app_list();
+        store.remove_all();
+        
+        // 限制最多显示 20 个结果
+        let max_results = 20;
+        for app in apps.iter().take(max_results) {
+            store.append(app);
         }
-        self.scrolled_window.set_visible(apps.len() > 0);
+        
+        self.scrolled_window.set_visible(!apps.is_empty());
     }
 
     /// 隐藏窗口
     pub(crate) fn hide(&self) {
+        self.get_app_list().remove_all();
+        self.search_entry.set_text("");
         self.obj().set_visible(false);
     }
 

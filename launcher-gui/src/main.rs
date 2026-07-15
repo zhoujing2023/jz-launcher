@@ -58,24 +58,34 @@ fn setup_app_command_line_callback(app: &Application, window_ref: &WindowRef) {
         ExitCode::FAILURE,
         move |app, cmdline| {
             let args = cmdline.arguments();
-            println!("参数信息：{:?}", args);
+            println!("收到命令行参数：{:?}", args);
+            
             let has_toggle = args
                 .iter()
                 .any(|arg| arg.to_string_lossy().contains("--toggle"));
 
-            // 初始化窗口
-            app.activate();
-
-            // 切换当前显隐状态
-            if has_toggle {
+            // 如果是主实例第一次启动（无 --toggle）
+            if !has_toggle {
+                app.activate(); // 创建窗口
+            } else {
+                // 如果是 --toggle 调用，切换窗口显示状态
                 if let Some(window) = window_ref.borrow().as_ref() {
                     if window.is_visible() {
+                        println!("隐藏窗口");
                         window.hide();
                     } else {
+                        println!("显示窗口");
+                        window.show();
+                    }
+                } else {
+                    // 窗口还未创建，先激活创建窗口
+                    app.activate();
+                    if let Some(window) = window_ref.borrow().as_ref() {
                         window.show();
                     }
                 }
             }
+            
             ExitCode::SUCCESS
         }
     ));
