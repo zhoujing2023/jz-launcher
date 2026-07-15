@@ -1,9 +1,9 @@
 use crate::app_data_object::AppDataObject;
 use crate::app_provider::to_data_object;
 use crate::search_result_item::SearchResultItem;
-use adw::gdk;
 use adw::gdk::Display;
-use adw::prelude::{DisplayExt, ListModelExt, MonitorExt};
+use adw::prelude::{ActionMapExt, DisplayExt, ListModelExt, MonitorExt};
+use adw::{gdk, gio};
 use glib::Propagation;
 use glib::prelude::{Cast, CastNone};
 use glib::subclass::InitializingObject;
@@ -22,26 +22,34 @@ use std::cell::RefCell;
 #[derive(CompositeTemplate, Default)]
 #[template(resource = "/org/zhoujing/jz-launcher/ui/window.ui")]
 pub struct Window {
+    // 透明背景按钮控件
     #[template_child]
     pub background_button: TemplateChild<gtk::Button>,
+    // 主容器控件
     #[template_child]
     pub main_box: TemplateChild<gtk::Box>,
+    // 搜索栏控件
     #[template_child]
     pub search_entry: TemplateChild<gtk::Entry>,
+    // 滚动窗口控件
     #[template_child]
     pub scrolled_window: TemplateChild<gtk::ScrolledWindow>,
+    // 列表视图
     #[template_child]
     pub result_list: TemplateChild<gtk::ListView>,
+    // 列表视图存储的数据
     pub app_list: RefCell<Option<ListStore>>,
-    // core 属性
+
+    // *********  core 属性 *********
+    // 环境信息
     env: RefCell<Env>,
+    // 搜索程序
     search_engine: RefCell<SearchEngine>,
 }
 
-// GObject 子类化
 #[glib::object_subclass]
 impl ObjectSubclass for Window {
-    const NAME: &'static str = "MyGtkWindow";
+    const NAME: &'static str = "MyWindow";
     type Type = super::Window;
     type ParentType = gtk::ApplicationWindow;
 
@@ -67,9 +75,10 @@ impl ObjectImpl for Window {
         let apps = AppLoader::load(&env);
         *self.search_engine.borrow_mut() = SearchEngine::new(apps);
 
-        // 配置 gui 数据： 1.配置 ListView 模式和工厂 2.事件绑定 3.初始化控件样式
+        // 配置 gui 数据： 1.配置 ListView 模式和工厂 2.信号回调 3.配置Actions 4.初始化控件样式
         self.setup_model();
         self.setup_factory();
+        self.setup_actions();
         self.setup_callbacks();
         self.init_widget_style();
     }
@@ -81,17 +90,23 @@ impl ApplicationWindowImpl for Window {}
 
 // 自定义方法实现
 impl Window {
+
+    /// 初始化布局样式
+    /// 由于 Wayland 安全限制，无法主动调整窗口位置，默认使用透明背景占满整个屏幕，使其主窗口（搜索框）定位
     fn init_widget_style(&self) {
         let (screen_width, screen_height) = Self::get_screen_size();
+
+        // 搜索框离屏幕顶部 20% 距离
         let main_box_margin_top = (screen_height as f64 * 0.20) as i32;
         self.main_box.get().set_margin_top(main_box_margin_top);
 
+        // 窗口默认占满整个屏幕
         let window = self.obj();
         window.set_default_width(screen_width);
         window.set_default_height(screen_height);
     }
 
-    /// `get_screen_size` 获取屏幕大小（宽高）
+    /// 获取屏幕大小（宽，高）
     fn get_screen_size() -> (i32, i32) {
         let display = Display::default().expect("无法连接到显示器");
         // 获取所有显示器列表中索引为 0 的显示器 (通常是主显示器)
@@ -104,7 +119,7 @@ impl Window {
         (geo.width(), geo.height())
     }
 
-    /// `get_app_list` 获取“搜索结果列表”数据模型
+    /// 获取列表视图数据模型
     fn get_app_list(&self) -> ListStore {
         self.app_list
             .borrow()
@@ -112,9 +127,9 @@ impl Window {
             .expect("获取 app_list 失败，app_list 为空")
     }
 
-    /// `setup_model` 配置“搜索结果列表”模型
+    /// 配置列表视图模型
+    /// 列表视图存储的数据类型为 AppDataObject
     fn setup_model(&self) {
-        // 创建并配置 store 存储的数据类型为 AppDataObject
         let store = ListStore::new::<AppDataObject>();
         self.app_list.replace(Some(store));
 
@@ -122,7 +137,7 @@ impl Window {
         self.result_list.set_model(Some(&selection));
     }
 
-    /// `setup_factory` 配置“搜索结果列表”工厂
+    /// 配置列表视图工厂
     fn setup_factory(&self) {
         let factory = SignalListItemFactory::new();
 
@@ -157,36 +172,63 @@ impl Window {
         self.result_list.set_factory(Some(&factory));
     }
 
-    /// `setup_callbacks` 集中配置回调事件
+    /// 集中配置回调信号
     fn setup_callbacks(&self) {
-        self.setup_window_show_callbacks();
-        self.setup_background_button_clicked_callbacks();
-        self.setup_entry_changed_callbacks();
-        self.setup_keyboard_navigation_callbacks();
-        self.setup_search_entry_activate_callbacks();
-        self.setup_list_view_connect_activate_callbacks();
+        self.setup_window_show_callback();
+        self.setup_window_close_callback();
+        self.setup_background_button_clicked_callback();
+        self.setup_entry_changed_callback();
+        self.setup_keyboard_navigation_callback();
+        self.setup_search_entry_activate_callback();
+        self.setup_list_view_connect_activate_callback();
     }
 
-    /// 搜索栏获取焦点
-    fn setup_window_show_callbacks(&self) {
-        let search_entry_clone = self.search_entry.clone();
+    /// 窗口显示-信号
+    /// 1.聚焦搜索栏
+    /// 2.清空搜索栏中数据
+    fn setup_window_show_callback(&self) {
+        let search_entry = self.search_entry.get();
+        let app_store = self.get_app_list();
         let window = self.obj();
-        window.connect_show(move |_| {
-            search_entry_clone.grab_focus();
+        window.connect_show(glib::clone!(
+            #[weak]
+            search_entry,
+            #[weak]
+            app_store,
+            move |_| {
+                search_entry.grab_focus();
+                search_entry.set_text("");
+                app_store.remove_all();
+            }
+        ));
+    }
+
+    /// 窗口关闭-信号
+    /// 隐藏窗口
+    fn setup_window_close_callback(&self) {
+        let window = self.obj();
+        window.connect_close_request(|window| {
+            window.hide();
+            Propagation::Stop
         });
     }
 
-    /// 关闭
-    fn setup_background_button_clicked_callbacks(&self) {
-        let window = self.obj().clone();
-        self.background_button.connect_clicked(move |_| {
-            window.close();
-        });
+    /// 透明背景点击-信号
+    /// 隐藏窗口
+    fn setup_background_button_clicked_callback(&self) {
+        let window = self.obj();
+        self.background_button.connect_clicked(glib::clone!(
+            #[weak]
+            window,
+            move |_| {
+                window.hide();
+            }
+        ));
     }
 
-    /// `setup_entry_changed_callbacks` 配置“搜索框内容更新”事件
+    /// 搜索框内容变更-信号
     /// 1.查询。2.更新列表UI
-    fn setup_entry_changed_callbacks(&self) {
+    fn setup_entry_changed_callback(&self) {
         let obj = self.obj();
         self.search_entry.connect_changed(glib::clone!(
             #[weak]
@@ -206,8 +248,8 @@ impl Window {
         ));
     }
 
-    /// `setup_keyboard_navigation_callbacks` 配置“搜索栏-键盘”回调
-    fn setup_keyboard_navigation_callbacks(&self) {
+    /// 搜索栏的按键监听-信号
+    fn setup_keyboard_navigation_callback(&self) {
         let controller = EventControllerKey::new();
         let obj = self.obj();
         controller.connect_key_pressed(glib::clone!(
@@ -219,20 +261,19 @@ impl Window {
                 match key {
                     Key::Up | Key::Down => {
                         obj.imp().handle_list_navigation(key);
-                        // Propagation::Stop 表示：我已经处理了，搜索栏不要再处理
                         Propagation::Stop
                     }
                     _ => Propagation::Proceed,
                 }
             }
         ));
-        // 将键盘控制器事件添加至搜索栏上
+        // 将键盘控制器信号添加至搜索栏上
         self.search_entry.get().add_controller(controller);
     }
 
-    /// `setup_search_entry_activate_callbacks` 配置“搜索栏”激活事件
+    /// 搜索框激活（回车）-信号
     /// 运行选中项的执行指令
-    fn setup_search_entry_activate_callbacks(&self) {
+    fn setup_search_entry_activate_callback(&self) {
         let obj = self.obj();
         self.search_entry.connect_activate(glib::clone!(
             #[weak]
@@ -244,7 +285,7 @@ impl Window {
         ));
     }
 
-    /// `get_selection` 获取 SingleSelection 控件
+    /// 从列表视图控件中获取 SingleSelection 控件
     fn get_selection(&self) -> SingleSelection {
         let list = self.result_list.get();
         let select_model = list
@@ -256,9 +297,8 @@ impl Window {
             .clone()
     }
 
-    /// `setup_list_view_connect_activate_callbacks` 配置 “ListView 激活”事件
-    /// 鼠标选中项双击执行
-    fn setup_list_view_connect_activate_callbacks(&self) {
+    /// 列表视图激活（双击）-信号
+    fn setup_list_view_connect_activate_callback(&self) {
         let result_list = self.result_list.get();
         let obj = self.obj();
         result_list.connect_activate(glib::clone!(
@@ -270,7 +310,7 @@ impl Window {
         ));
     }
 
-    /// `handle_list_navigation` 通过 Up / Down 键切换选中的列表项
+    /// 通过 Up / Down 键切换选中的列表项
     fn handle_list_navigation(&self, key: Key) {
         let selection = self.get_selection();
         if selection.n_items() < 1 {
@@ -288,12 +328,14 @@ impl Window {
         let new_selected = new_selected.min(selection.n_items() - 1);
 
         selection.set_selected(new_selected);
+
+        // 列表视图滚动到选中的项
         self.result_list
             .get()
             .scroll_to(new_selected, ListScrollFlags::FOCUS, None);
     }
 
-    /// `handle_run_app_cmd` 运行应用程序
+    /// 运行应用程序
     fn handle_run_app_cmd(&self) {
         let selection = self.get_selection();
         let Some(selected_object) = selection.selected_item() else {
@@ -309,9 +351,18 @@ impl Window {
         AppRunner::run(&exec_cmd);
         // 更新应用分数
         self.record_launch(app_info);
+        // 隐藏窗口
+        let obj = self.obj();
+        glib::idle_add_local_once(glib::clone!(
+            #[weak]
+            obj,
+            move || {
+                obj.hide();
+            }
+        ));
     }
 
-    /// `record_launch` 更新应用分数
+    /// 更新应用分数
     fn record_launch(&self, app_info: &AppDataObject) {
         let search_engine = self.search_engine.borrow();
         let apps = search_engine.get_apps();
@@ -325,7 +376,7 @@ impl Window {
         }
     }
 
-    /// `update_search_result` 更新搜索结果列表
+    /// 更新列表数据
     fn update_search_result(&self, apps: Vec<AppDataObject>) {
         // 清空旧结果
         self.get_app_list().remove_all();
@@ -333,5 +384,32 @@ impl Window {
             self.get_app_list().append(app);
         }
         self.scrolled_window.set_visible(apps.len() > 0);
+    }
+
+    /// 隐藏窗口
+    pub(crate) fn hide(&self) {
+        self.obj().set_visible(false);
+    }
+
+    /// 显示窗口
+    pub(crate) fn show(&self) {
+        let obj = self.obj();
+        obj.set_visible(true);
+        obj.present();
+    }
+
+    /// 配置 Actions
+    fn setup_actions(&self) {
+        let obj = self.obj();
+        // 隐藏 Actions
+        let hide_action = gio::SimpleAction::new("hide", None);
+        hide_action.connect_activate(glib::clone! {
+            #[weak]
+            obj,
+            move |_,_|{
+                obj.hide();
+            }
+        });
+        obj.add_action(&hide_action);
     }
 }

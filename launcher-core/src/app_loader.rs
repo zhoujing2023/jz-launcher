@@ -14,6 +14,7 @@ impl AppLoader {
             PathBuf::from("/usr/share/applications"),
             PathBuf::from("/var/lib/snapd/desktop/applications"),
             env.home_dir.join(".local/share/applications"),
+            env.home_dir.join("桌面"),
         ];
         // 目录条目集合
         let dir_entry_list = Self::parse_dir_entry(desktop_paths);

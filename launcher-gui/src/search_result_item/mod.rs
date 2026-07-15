@@ -12,6 +12,7 @@ glib::wrapper! {
 }
 
 impl SearchResultItem {
+    /// 绑定属性
     pub fn bind(&self, app: Option<AppDataObject>) {
         self.imp().bind(app);
     }

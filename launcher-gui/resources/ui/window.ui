@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-    <template class="MyGtkWindow" parent="GtkApplicationWindow">
+    <template class="MyWindow" parent="GtkApplicationWindow">
         <property name="decorated">False</property>
         <property name="title">JzLauncher</property>
         <property name="default-width">500</property>

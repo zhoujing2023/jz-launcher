@@ -10,17 +10,20 @@ use gtk::{CompositeTemplate, TemplateChild};
 #[derive(Default, CompositeTemplate)]
 #[template(resource = "/org/zhoujing/jz-launcher/ui/search-result-item.ui")]
 pub struct SearchResultItem {
+    // 应用图标控件
     #[template_child]
     pub icon: TemplateChild<gtk::Image>,
+    // 应用名称标签控件
     #[template_child]
     pub name_label: TemplateChild<gtk::Label>,
+    // 应用说明标签控件
     #[template_child]
     pub comment_label: TemplateChild<gtk::Label>,
 }
 
 #[glib::object_subclass]
 impl ObjectSubclass for SearchResultItem {
-    const NAME: &'static str = "SearchResultItem";
+    const NAME: &'static str = "MySearchResultItem";
     type Type = super::SearchResultItem;
     type ParentType = gtk::Box;
 
@@ -40,7 +43,7 @@ impl WidgetImpl for SearchResultItem {}
 impl BoxImpl for SearchResultItem {}
 
 impl SearchResultItem {
-    /// `bind` 绑定属性
+    /// 绑定属性
     pub(super) fn bind(&self, app_data_obj: Option<AppDataObject>) {
         if let Some(app_data) = app_data_obj {
             app_data.bind_property("name", &self.name_label.get(), "label")

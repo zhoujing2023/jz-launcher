@@ -6,7 +6,10 @@ use crate::app_data_object::AppDataObject;
 use crate::mock_data::mock_app_list;
 use crate::search_result_item::SearchResultItem;
 use adw::gdk::Key;
-use adw::prelude::{ApplicationExt, ApplicationExtManual, DisplayExt, MonitorExt};
+use adw::prelude::{
+    ActionMapExt, ApplicationCommandLineExt, ApplicationExt, ApplicationExtManual, DisplayExt,
+    MonitorExt,
+};
 use adw::{Application, gdk};
 use glib::object::{Cast, CastNone};
 use glib::{ExitCode, Propagation};
@@ -18,23 +21,72 @@ use gtk::prelude::{
 };
 use gtk::{
     ApplicationWindow, CssProvider, Entry, EventControllerKey, ListItem, ListView, Orientation,
-    SignalListItemFactory, SingleSelection,
+    SignalListItemFactory, SingleSelection, gio,
 };
+use std::cell::RefCell;
+use std::rc::Rc;
 
 const APP_ID: &str = "debug.zhoujing.jz-launcher";
 
 fn main() -> ExitCode {
-    let app = Application::builder().application_id(APP_ID).build();
-    app.connect_startup(|_| {
-        load_css();
+    let app = Application::builder()
+        .application_id(APP_ID)
+        .flags(gio::ApplicationFlags::HANDLES_COMMAND_LINE)
+        .build();
+    app.connect_startup(|app| {
+        setup_actions(app);
+        println!("启动成功～");
+        println!("命令：{} --toggle", get_executable_path())
     });
-    app.connect_activate(debug_build_ui);
-    app.set_accels_for_action("window.close", &["Escape"]);
+
+    let window_ref: Rc<RefCell<Option<ApplicationWindow>>> = Rc::new(RefCell::new(None));
+
+    // 初始创建窗口
+    let window_clone = window_ref.clone();
+    app.connect_activate(move |app| {
+        if window_clone.borrow().is_none() {
+            let window = build_ui(&app);
+            window.set_visible(false);
+            *window_clone.borrow_mut() = Some(window);
+        }
+    });
+
+    // 命令处理信号
+    let window_clone = window_ref.clone();
+    app.connect_command_line(move |app, cmdline| {
+        let args = cmdline.arguments();
+        println!("参数信息：{:#?}", args);
+        let has_toggle = args
+            .iter()
+            .any(|arg| arg.to_string_lossy().contains("--toggle"));
+        // 初始化窗口，切换显隐状态
+        app.activate();
+        if has_toggle {
+            if let Some(window) = window_clone.borrow().as_ref() {
+                if window.get_visible() {
+                    hide_window(&window);
+                } else {
+                    show_window(&window);
+                }
+            }
+        }
+        ExitCode::SUCCESS
+    });
+
     app.run()
 }
 
-/// `debug_build_ui` 构建调试时的 UI 模板
-fn debug_build_ui(app: &Application) {
+fn hide_window(window: &ApplicationWindow) {
+    window.set_visible(false);
+}
+
+fn show_window(window: &ApplicationWindow) {
+    window.set_visible(true);
+    window.present();
+}
+
+/// `build_ui` 构建 UI 模板
+fn build_ui(app: &Application) -> ApplicationWindow {
     let (screen_width, screen_height) = get_screen_size();
     let main_box_margin_top = (screen_height as f64 * 0.20) as i32;
 
@@ -119,7 +171,7 @@ fn debug_build_ui(app: &Application) {
     // 遮罩布局
     let overlay = gtk::Overlay::builder().build();
 
-    // 透明背景按钮（点击关闭）
+    // 透明背景按钮（点击隐藏）
     let background_button = gtk::Button::builder()
         .css_classes(vec!["background-button"])
         .hexpand(true)
@@ -128,7 +180,7 @@ fn debug_build_ui(app: &Application) {
 
     let window_clone = window.clone();
     background_button.connect_clicked(move |_| {
-        window_clone.close();
+        hide_window(&window_clone);
     });
 
     overlay.set_child(Some(&background_button));
@@ -136,20 +188,31 @@ fn debug_build_ui(app: &Application) {
 
     window.set_child(Some(&overlay));
 
-    // 窗口显示时聚焦搜索框
+    // 窗口显示时聚焦搜索框 并 清空之前的数据
     let search_entry_clone = search_entry.clone();
+    let app_store_clone = app_store.clone();
     window.connect_show(move |_| {
         search_entry_clone.grab_focus();
+        search_entry_clone.set_text("");
+        app_store_clone.remove_all();
+    });
+
+    // 拦截关闭信号
+    window.connect_close_request(|window| {
+        hide_window(window);
+        Propagation::Stop
     });
 
     // 配置搜索栏回调
     setup_entry_changed_callback(&search_entry, &app_store, &scrolled_window);
-    setup_entry_activate_callback(&search_entry, &selection_model);
+    setup_entry_activate_callback(&search_entry, &selection_model, &window);
     setup_entry_keyboard_navigation_callback(&search_entry, &selection_model, &list_view);
     // 配置列表项回调
-    setup_list_view_row_activated_callback(&list_view, &selection_model);
+    setup_list_view_row_activated_callback(&list_view, &selection_model, &window);
 
-    window.present();
+    // 加载css
+    load_css();
+    window
 }
 
 /// `get_screen_size` 获取屏幕大小（宽高）
@@ -163,6 +226,15 @@ fn get_screen_size() -> (i32, i32) {
         .expect("无法获取主显示器");
     let geo = monitor.geometry();
     (geo.width(), geo.height())
+}
+
+/// 获取当前可执行文件的完整路径
+/// 场景：当前用户需要配置全局快捷键时，需要知道绝对路径
+fn get_executable_path() -> String {
+    std::env::current_exe()
+        .ok()
+        .and_then(|p| p.to_str().map(|s| s.to_string()))
+        .unwrap_or_else(|| "jz-launcher".to_string())
 }
 
 /// 回调-搜索栏数据发生变更时
@@ -201,16 +273,22 @@ fn setup_entry_changed_callback(
 }
 
 /// 回调-搜索栏被激活时
-fn setup_entry_activate_callback(entry: &Entry, selection: &SingleSelection) {
+fn setup_entry_activate_callback(
+    entry: &Entry,
+    selection: &SingleSelection,
+    window: &ApplicationWindow,
+) {
     entry.connect_activate(glib::clone!(
         #[weak]
         selection,
-        move |_| exec_selected_item_app(&selection)
+        #[weak]
+        window,
+        move |_| exec_selected_item_app(&selection, &window)
     ));
 }
 
 /// 执行选中项的应用程序
-fn exec_selected_item_app(selection: &SingleSelection) {
+fn exec_selected_item_app(selection: &SingleSelection, window: &ApplicationWindow) {
     let Some(data) = selection.selected_item() else {
         eprintln!("没有选中的项");
         return;
@@ -220,6 +298,12 @@ fn exec_selected_item_app(selection: &SingleSelection) {
         .expect("转换为 AppDataObject 失败");
     println!("执行：{}", app_data.exec_cmd().unwrap());
     // TODO: 执行指令
+
+    // 隐藏窗口
+    let window_clone = window.clone();
+    glib::idle_add_local_once(move || {
+        hide_window(&window_clone);
+    });
 }
 
 /// 回调-搜索栏键盘输入监听
@@ -270,12 +354,30 @@ fn handle_list_navigation(key: Key, selection: &SingleSelection, list_view: &Lis
 }
 
 /// 回调-列表视图激活（双击）
-fn setup_list_view_row_activated_callback(list_view: &ListView, selection: &SingleSelection) {
+fn setup_list_view_row_activated_callback(
+    list_view: &ListView,
+    selection: &SingleSelection,
+    window: &ApplicationWindow,
+) {
     list_view.connect_activate(glib::clone!(
         #[weak]
         selection,
-        move |_, _index| exec_selected_item_app(&selection)
+        #[weak]
+        window,
+        move |_, _index| exec_selected_item_app(&selection, &window)
     ));
+}
+
+/// 配置 Action
+fn setup_actions(app: &Application) {
+    let quit_action = gio::SimpleAction::new("quit", None);
+    let app_clone = app.clone();
+    quit_action.connect_activate(move |_, _| {
+        println!("退出程序");
+        app_clone.quit();
+    });
+    app.add_action(&quit_action);
+    app.set_accels_for_action("app.quit", &["<Ctrl>q"]);
 }
 
 /// 加载 CSS

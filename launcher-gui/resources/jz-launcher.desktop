@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=JzLauncher
-Comment=Linux桌面应用启动器
+Comment=Linux desktop application launcher
 Comment[zh_CN]=Linux桌面应用启动器
 GenericName=Application Launcher
 Exec=jz-launcher
