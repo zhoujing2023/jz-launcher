@@ -4,7 +4,7 @@ use crate::config::Config;
 use adw::gdk::Display;
 use adw::gdk::pango::FontDescription;
 use adw::gio::ActionEntry;
-use adw::{Application, gdk};
+use adw::{gdk, Application};
 use glib::Propagation;
 use gtk::prelude::*;
 use gtk::{
@@ -18,8 +18,8 @@ use std::rc::Rc;
 const APP_ID: &str = "debug.zhoujing.jz_tools";
 type ConfigRef = Rc<RefCell<Config>>;
 
-const HOTKEY_ACTION: &str = "open";
-const CLOSE_ACTION: &str = "close";
+const SHOW_ACTION: &str = "show";
+const HIDE_ACTION: &str = "hide";
 
 fn main() -> glib::ExitCode {
     let app = Application::builder().application_id(APP_ID).build();
@@ -29,8 +29,8 @@ fn main() -> glib::ExitCode {
         let window = build_settings_window(app);
         window.present();
     });
-    app.set_accels_for_action("win.close", &["<Control>q"]);
-    app.set_accels_for_action("win.open", &["<Shift>space"]);
+    app.set_accels_for_action("win.hide", &["<Control>q"]);
+    app.set_accels_for_action("win.show", &["<Shift>space"]);
     app.run()
 }
 
@@ -46,23 +46,24 @@ fn load_css() {
 
 fn setup_shortcut_key_action(_window: &ApplicationWindow) -> Vec<ActionEntry<ApplicationWindow>> {
     let mut action_entry_list: Vec<ActionEntry<ApplicationWindow>> = Vec::default();
-    // 打开
-    let action_open = ActionEntry::builder(HOTKEY_ACTION)
-        .activate(|_window: &ApplicationWindow, _, _| {
-            println!("打开应用程序……");
-            // TODO: 打开应用程序
-        })
-        .build();
-
-    // 关闭
-    let action_close = ActionEntry::builder(CLOSE_ACTION)
+    // 显示
+    let action_show = ActionEntry::builder(SHOW_ACTION)
         .activate(|window: &ApplicationWindow, _, _| {
-            window.close();
+            println!("显示窗口……");
+            window.set_visible(true);
+            window.present();
         })
         .build();
 
-    action_entry_list.push(action_open);
-    action_entry_list.push(action_close);
+    // 隐藏
+    let action_hide = ActionEntry::builder(HIDE_ACTION)
+        .activate(|window: &ApplicationWindow, _, _| {
+            window.set_visible(false);
+        })
+        .build();
+
+    action_entry_list.push(action_show);
+    action_entry_list.push(action_hide);
     action_entry_list
 }
 
@@ -117,7 +118,7 @@ fn build_settings_window(app: &Application) -> ApplicationWindow {
     let shortcuts_page = build_shortcuts_page(&window, &config);
     let about_page = build_about_page();
 
-    // 添加页面并设置标题（修正为正确的 &str）
+    // 添加页面并设置标题
     content_stack.add_named(&general_page, Some("general_page"));
     let page = content_stack.page(&general_page);
     page.set_title("通用");
@@ -207,17 +208,22 @@ fn build_general_page(config: &ConfigRef) -> Box {
     page.append(&scrolled_window);
 
     let button_box = Box::builder().halign(gtk::Align::End).spacing(12).build();
+
     let edit_button = Button::builder().label("编辑").build();
     button_box.append(&edit_button);
+
     let save_button = Button::builder()
         .label("保存")
         .css_classes(vec!["suggested-action"])
         .visible(false)
         .build();
     button_box.append(&save_button);
-    page.append(&button_box);
+
     let cancel_button = Button::builder().label("取消").visible(false).build();
     button_box.append(&cancel_button);
+
+    page.append(&button_box);
+
 
     // 更新 TextView UI
     update_desktop_paths_view_ui(
@@ -404,22 +410,22 @@ fn build_shortcuts_page(window: &ApplicationWindow, config: &ConfigRef) -> Box {
         .valign(gtk::Align::Start)
         .build();
 
-    let hotkeys_entry = Entry::builder()
+    let show_entry = Entry::builder()
         .editable(false)
-        .text(&config.borrow().shortcut.hotkey)
+        .text(&config.borrow().shortcut.show)
         .width_request(240)
         .build();
-    let row_1 = build_setting_row("热键", &hotkeys_entry);
-    setup_bind_shortcut_keys(&window, HOTKEY_ACTION.to_string(), &hotkeys_entry, &config);
+    let row_1 = build_setting_row("显示", &show_entry);
+    setup_bind_shortcut_keys(&window, SHOW_ACTION.to_string(), &show_entry, &config);
     page.append(&row_1);
 
-    let close_entry = Entry::builder()
+    let hide_entry = Entry::builder()
         .editable(false)
-        .text(&config.borrow().shortcut.close)
+        .text(&config.borrow().shortcut.hide)
         .width_request(240)
         .build();
-    let row_2 = build_setting_row("关闭", &close_entry);
-    setup_bind_shortcut_keys(&window, CLOSE_ACTION.to_string(), &close_entry, &config);
+    let row_2 = build_setting_row("隐藏", &hide_entry);
+    setup_bind_shortcut_keys(&window, HIDE_ACTION.to_string(), &hide_entry, &config);
     page.append(&row_2);
 
     page
@@ -500,8 +506,8 @@ fn update_window_shortcut(
     if let Some(application) = window.application() {
         application.set_accels_for_action(&format!("win.{}", action_name), &[shortcut_str]);
         match action_name {
-            HOTKEY_ACTION => config.borrow_mut().shortcut.hotkey = shortcut_str.to_string(),
-            CLOSE_ACTION => config.borrow_mut().shortcut.close = shortcut_str.to_string(),
+            SHOW_ACTION => config.borrow_mut().shortcut.show = shortcut_str.to_string(),
+            HIDE_ACTION => config.borrow_mut().shortcut.hide = shortcut_str.to_string(),
             _ => unreachable!(),
         }
         let _ = config.borrow().save();
@@ -603,9 +609,9 @@ fn init_config(config: &ConfigRef, window: &ApplicationWindow) {
 
     // 快捷键
     if let Some(application) = window.application() {
-        let hotkey_shortcut = &config.borrow().shortcut.hotkey;
-        application.set_accels_for_action(&format!("win.{}", HOTKEY_ACTION), &[hotkey_shortcut]);
-        let close_shortcut = &config.borrow().shortcut.close;
-        application.set_accels_for_action(&format!("win.{}", CLOSE_ACTION), &[close_shortcut]);
+        let hotkey_shortcut = &config.borrow().shortcut.show;
+        application.set_accels_for_action(&format!("win.{}", SHOW_ACTION), &[hotkey_shortcut]);
+        let close_shortcut = &config.borrow().shortcut.hide;
+        application.set_accels_for_action(&format!("win.{}", HIDE_ACTION), &[close_shortcut]);
     }
 }

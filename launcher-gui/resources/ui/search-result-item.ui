@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
+    <requires lib="gtk" version="4.0"/>
+
     <template class="MySearchResultItem" parent="GtkBox">
         <property name="orientation">horizontal</property>
         <property name="spacing">10</property>
@@ -8,11 +10,15 @@
         <style>
             <class name="search-result-item-box-row"/>
         </style>
+
+        <!-- Icon -->
         <child>
             <object class="GtkImage" id="icon">
                 <property name="pixel_size">50</property>
             </object>
         </child>
+
+        <!-- 文本内容 -->
         <child>
             <object class="GtkBox">
                 <property name="orientation">vertical</property>
@@ -20,14 +26,17 @@
                 <style>
                     <class name="search-result-item-text-box"/>
                 </style>
+
+                <!-- 名称 -->
                 <child>
                     <object class="GtkLabel" id="name_label">
                         <property name="halign">start</property>
-                        <!-- 设置最大可显示字数为50，超出则显示省略号 -->
-                        <property name="max_width_chars">50</property>
+                        <property name="max_width_chars">50</property> <!-- 设置最大可显示字数为50，超出则显示省略号 -->
                         <property name="ellipsize">end</property>
                     </object>
                 </child>
+
+                <!-- 描述 -->
                 <child>
                     <object class="GtkLabel" id="comment_label">
                         <property name="halign">start</property>

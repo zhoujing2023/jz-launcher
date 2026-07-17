@@ -38,7 +38,7 @@ fn main() -> ExitCode {
         load_css();
     });
     app.connect_activate(debug_build_ui);
-    app.set_accels_for_action("window.close", &["Escape"]);
+    app.set_accels_for_action("launcher_window.close", &["Escape"]);
     app.run()
 }
 
@@ -104,8 +104,8 @@ fn setup_entry_changed_callback(
             if keyword.is_empty() {
                 println!("输入的内容为空，取消查询操作");
                 // 强制刷新高度
-                // 注意：window 和 其它控件不同，它是只增不减的类型（只管放大不管缩小），所以此处强制使 window 重新计算高度
-                // 这里的 -1 是个固定值，将 window 高度设置成最小，再通过 queue_resize 根据子控件的高度计算 Window 的高度
+                // 注意：launcher_window 和 其它控件不同，它是只增不减的类型（只管放大不管缩小），所以此处强制使 launcher_window 重新计算高度
+                // 这里的 -1 是个固定值，将 launcher_window 高度设置成最小，再通过 queue_resize 根据子控件的高度计算 Window 的高度
                 window.set_default_size(400, -1);
                 window.queue_resize();
                 return;

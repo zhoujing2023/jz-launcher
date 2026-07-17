@@ -46,10 +46,12 @@ impl SearchResultItem {
     /// 绑定属性
     pub(super) fn bind(&self, app_data_obj: Option<AppDataObject>) {
         if let Some(app_data) = app_data_obj {
-            app_data.bind_property("name", &self.name_label.get(), "label")
+            app_data
+                .bind_property("name", &self.name_label.get(), "label")
                 .sync_create()
                 .build();
-            app_data.bind_property("comment", &self.comment_label.get(), "label")
+            app_data
+                .bind_property("comment", &self.comment_label.get(), "label")
                 .sync_create()
                 .build();
             if let Some(icon) = app_data.icon() {
@@ -58,7 +60,8 @@ impl SearchResultItem {
                 } else {
                     "icon-name"
                 };
-                app_data.bind_property("icon", &self.icon.get(), icon)
+                app_data
+                    .bind_property("icon", &self.icon.get(), icon)
                     .sync_create()
                     .build();
             }

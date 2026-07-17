@@ -20,14 +20,20 @@ impl SearchEngine {
     pub fn search(&self, keyword: &str) -> Vec<&AppEntry> {
         let keyword_lower = keyword.to_lowercase();
         let keyword_lower = keyword_lower.as_str();
-        let mut app_entry_list: Vec<_> = self
-            .apps
+
+        // let mut app_entry_list: Vec<_> = self
+        //     .apps
+        //     .iter()
+        //     .filter(|app| Self::fuzzy_match(&app.search_key, keyword_lower))
+        //     .collect();
+        // // 根据 score 降序排序
+        // app_entry_list.sort_by(|a, b| b.score.borrow().cmp(&a.score.borrow()));
+        // app_entry_list
+
+        self.apps
             .iter()
             .filter(|app| Self::fuzzy_match(&app.search_key, keyword_lower))
-            .collect();
-        // 根据 score 降序排序
-        app_entry_list.sort_by(|a, b| b.score.borrow().cmp(&a.score.borrow()));
-        app_entry_list
+            .collect()
     }
 
     /// `fuzzy_match` 模糊匹配

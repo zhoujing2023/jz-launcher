@@ -1,5 +1,5 @@
-const FILE_PATH: &str = "/home/zhoujing/.config/jz_tools/usage.json";
-const FILE_DIR: &str = "/home/zhoujing/.config/jz_tools";
+const FILE_PATH: &str = "/home/zhoujing/.config_data_object/jz_tools/usage.json";
+const FILE_DIR: &str = "/home/zhoujing/.config_data_object/jz_tools";
 
 /// `test_file_read_or_write` 文件读取，如果目录不存在则创建，再写入
 #[test]

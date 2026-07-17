@@ -1,0 +1,369 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+    <!--    <requires lib="gtk" version="4.0"/>-->
+
+    <template class="MySettingWindow" parent="GtkApplicationWindow">
+        <property name="title">设置</property>
+        <property name="default-width">600</property>
+        <property name="default-height">400</property>
+        <property name="resizable">True</property>
+
+        <child>
+            <object class="GtkBox" id="main_box">
+                <property name="orientation">horizontal</property>
+
+                <!-- 左侧页面导航 -->
+                <child>
+                    <object class="GtkStackSidebar" id="sidebar">
+                        <property name="width-request">150</property>
+                        <property name="vexpand">True</property>
+                        <property name="stack">content_stack</property>
+                    </object>
+                </child>
+
+                <child>
+                    <object class="GtkSeparator">
+                        <property name="orientation">vertical</property>
+                    </object>
+                </child>
+
+                <!-- 右侧设置页面 -->
+                <child>
+                    <object class="GtkStack" id="content_stack">
+                        <property name="hexpand">True</property>
+                        <property name="vexpand">True</property>
+                        <property name="margin-top">24</property>
+                        <property name="margin-bottom">24</property>
+                        <property name="margin-start">24</property>
+                        <property name="margin-end">24</property>
+                        <property name="transition-type">slide-left-right</property>
+                        <property name="transition-duration">200</property>
+                        <!-- 通用 -->
+                        <child>
+                            <object class="GtkStackPage">
+                                <property name="name">general</property>
+                                <property name="title">通用</property>
+                                <property name="child">
+                                    <object class="GtkBox" id="general_page">
+                                        <property name="orientation">vertical</property>
+                                        <property name="spacing">16</property>
+                                        <property name="halign">fill</property>
+                                        <property name="valign">start</property>
+
+                                        <child>
+                                            <object class="GtkBox">
+                                                <property name="orientation">horizontal</property>
+                                                <property name="spacing">12</property>
+                                                <property name="halign">start</property>
+                                                <child>
+                                                    <object class="GtkLabel">
+                                                        <property name="label">开机时自动运行</property>
+                                                        <property name="halign">start</property>
+                                                        <property name="hexpand">True</property>
+                                                        <property name="xalign">0</property>
+                                                    </object>
+                                                </child>
+                                                <child>
+                                                    <object class="GtkSwitch" id="auto_start_switch"/>
+                                                </child>
+                                            </object>
+                                        </child>
+
+                                        <child>
+                                            <object class="GtkLabel">
+                                                <property name="label">Desktop 路径：</property>
+                                                <property name="halign">start</property>
+                                                <property name="xalign">0</property>
+                                            </object>
+                                        </child>
+
+                                        <child>
+                                            <object class="GtkScrolledWindow" id="desktop_paths_scrolled_window">
+                                                <property name="height-request">200</property>
+                                                <property name="hexpand">True</property>
+                                                <property name="halign">fill</property>
+                                                <property name="hscrollbar-policy">automatic</property>
+                                                <property name="vscrollbar-policy">automatic</property>
+                                                <child>
+                                                    <object class="GtkTextView" id="desktop_paths_view">
+                                                        <property name="wrap-mode">none</property>
+                                                        <property name="margin-top">3</property>
+                                                        <property name="margin-bottom">3</property>
+                                                        <property name="tooltip-text">Desktop 路径，通过换行区分目录
+                                                        </property>
+                                                        <property name="editable">False</property>
+                                                        <property name="monospace">True</property>
+                                                        <style>
+                                                            <class name="desktop-paths-list-view-disabled"/>
+                                                        </style>
+                                                    </object>
+                                                </child>
+                                            </object>
+                                        </child>
+
+                                        <child>
+                                            <object class="GtkBox" id="desktop_paths_button_box">
+                                                <property name="halign">end</property>
+                                                <property name="spacing">12</property>
+                                                <child>
+                                                    <object class="GtkButton" id="desktop_paths_edit_button">
+                                                        <property name="label">编辑</property>
+                                                    </object>
+                                                </child>
+                                                <child>
+                                                    <object class="GtkButton" id="desktop_paths_cancel_button">
+                                                        <property name="label">取消</property>
+                                                        <property name="visible">False</property>
+                                                    </object>
+                                                </child>
+                                                <child>
+                                                    <object class="GtkButton" id="desktop_paths_save_button">
+                                                        <property name="label">保存</property>
+                                                        <property name="visible">False</property>
+                                                        <style>
+                                                            <class name="suggested-action"/>
+                                                        </style>
+                                                    </object>
+                                                </child>
+                                            </object>
+                                        </child>
+                                    </object>
+                                </property>
+                            </object>
+                        </child>
+
+                        <!-- 外观 -->
+                        <child>
+                            <object class="GtkStackPage">
+                                <property name="name">appearance</property>
+                                <property name="title">外观</property>
+                                <property name="child">
+                                    <object class="GtkBox" id="appearance_page">
+                                        <property name="orientation">vertical</property>
+                                        <property name="spacing">16</property>
+                                        <property name="halign">fill</property>
+                                        <property name="valign">start</property>
+
+                                        <child>
+                                            <object class="GtkBox">
+                                                <property name="orientation">horizontal</property>
+                                                <property name="spacing">12</property>
+                                                <property name="halign">start</property>
+                                                <child>
+                                                    <object class="GtkLabel">
+                                                        <property name="label">主题模式</property>
+                                                        <property name="halign">start</property>
+                                                        <property name="hexpand">True</property>
+                                                        <property name="xalign">0</property>
+                                                    </object>
+                                                </child>
+                                                <child>
+                                                    <object class="GtkDropDown" id="theme_drop_down">
+                                                        <property name="enable-search">False</property>
+                                                        <property name="model">
+                                                            <object class="GtkStringList">
+                                                                <items>
+                                                                    <item>跟随系统</item>
+                                                                    <item>亮色</item>
+                                                                    <item>暗色</item>
+                                                                </items>
+                                                            </object>
+                                                        </property>
+                                                    </object>
+                                                </child>
+                                            </object>
+                                        </child>
+
+                                        <child>
+                                            <object class="GtkBox">
+                                                <property name="orientation">horizontal</property>
+                                                <property name="spacing">12</property>
+                                                <property name="halign">start</property>
+                                                <child>
+                                                    <object class="GtkLabel">
+                                                        <property name="label">字体大小</property>
+                                                        <property name="halign">start</property>
+                                                        <property name="hexpand">True</property>
+                                                        <property name="xalign">0</property>
+                                                    </object>
+                                                </child>
+                                                <child>
+                                                    <object class="GtkSpinButton" id="font_size_spin_button">
+                                                        <property name="numeric">True</property>
+                                                        <property name="digits">0</property>
+                                                        <property name="adjustment">
+                                                            <object class="GtkAdjustment" id="font_adjustment">
+                                                                <property name="lower">10</property>
+                                                                <property name="upper">24</property>
+                                                                <property name="step-increment">1</property>
+                                                                <property name="page-increment">2</property>
+                                                                <property name="value">11</property>
+                                                            </object>
+                                                        </property>
+                                                    </object>
+                                                </child>
+                                            </object>
+                                        </child>
+                                    </object>
+                                </property>
+                            </object>
+                        </child>
+
+                        <!-- 快捷键 -->
+                        <child>
+                            <object class="GtkStackPage">
+                                <property name="name">shortcuts</property>
+                                <property name="title">快捷键</property>
+                                <property name="child">
+                                    <object class="GtkBox" id="shortcuts_page">
+                                        <property name="orientation">vertical</property>
+                                        <property name="spacing">16</property>
+                                        <property name="halign">fill</property>
+                                        <property name="valign">start</property>
+
+                                        <child>
+                                            <object class="GtkBox">
+                                                <property name="orientation">horizontal</property>
+                                                <property name="spacing">12</property>
+                                                <property name="halign">start</property>
+                                                <child>
+                                                    <object class="GtkLabel">
+                                                        <property name="label">显示</property>
+                                                        <property name="halign">start</property>
+                                                        <property name="hexpand">True</property>
+                                                        <property name="xalign">0</property>
+                                                    </object>
+                                                </child>
+                                                <child>
+                                                    <object class="GtkEntry" id="show_shortcut_entry">
+                                                        <property name="editable">False</property>
+                                                        <property name="width-request">240</property>
+                                                        <property name="placeholder-text">点击后按下新的组合键
+                                                        </property>
+                                                    </object>
+                                                </child>
+                                            </object>
+                                        </child>
+                                        <child>
+                                            <object class="GtkLabel">
+                                                <property name="label">由于 Wayland 安全限制，需用户手动到“设置-键盘-自定义快捷键”配置以下指令：</property>
+                                                <property name="halign">fill</property>
+                                                <property name="wrap">True</property>
+                                                <property name="hexpand">True</property>
+                                                <style>
+                                                    <class name="hint-label"/>
+                                                </style>
+                                            </object>
+                                        </child>
+                                        <child>
+                                            <object class="GtkEntry" id="hint_label_entry">
+                                                <property name="editable">False</property>
+                                                <property name="width-request">240</property>
+                                            </object>
+                                        </child>
+                                        <child>
+                                            <object class="GtkBox">
+                                                <property name="orientation">horizontal</property>
+                                                <property name="spacing">12</property>
+                                                <property name="halign">start</property>
+                                                <child>
+                                                    <object class="GtkLabel">
+                                                        <property name="label">退出</property>
+                                                        <property name="halign">start</property>
+                                                        <property name="hexpand">True</property>
+                                                        <property name="xalign">0</property>
+                                                    </object>
+                                                </child>
+                                                <child>
+                                                    <object class="GtkEntry" id="quit_shortcut_entry">
+                                                        <property name="editable">False</property>
+                                                        <property name="width-request">240</property>
+                                                        <property name="placeholder-text">点击后按下新的组合键
+                                                        </property>
+                                                    </object>
+                                                </child>
+                                            </object>
+                                        </child>
+                                    </object>
+                                </property>
+                            </object>
+                        </child>
+
+                        <!-- 关于 -->
+                        <child>
+                            <object class="GtkStackPage">
+                                <property name="name">about</property>
+                                <property name="title">关于</property>
+                                <property name="child">
+                                    <object class="GtkBox" id="about_page">
+                                        <property name="orientation">vertical</property>
+                                        <property name="spacing">16</property>
+                                        <property name="halign">center</property>
+                                        <property name="valign">center</property>
+                                        <property name="hexpand">True</property>
+                                        <property name="vexpand">True</property>
+
+                                        <child>
+                                            <object class="GtkLabel" id="app_name_label">
+                                                <property name="label">JzLauncher</property>
+                                                <property name="halign">center</property>
+                                                <style>
+                                                    <class name="app_name"/>
+                                                </style>
+                                            </object>
+                                        </child>
+                                        <child>
+                                            <object class="GtkLabel" id="version_label">
+                                                <property name="label">v0.1.0</property>
+                                                <property name="halign">center</property>
+                                            </object>
+                                        </child>
+                                        <child>
+                                            <object class="GtkLabel">
+                                                <property name="label">Linux 桌面程序启动器</property>
+                                                <property name="halign">center</property>
+                                            </object>
+                                        </child>
+                                        <child>
+                                            <object class="GtkBox" id="repository_button_box">
+                                                <property name="orientation">horizontal</property>
+                                                <property name="halign">center</property>
+                                                <property name="spacing">16</property>
+                                                <child>
+                                                    <object class="GtkLinkButton" id="github_link_button">
+                                                        <property name="uri">https://github.com/zhoujing2023/jz-launcher
+                                                        </property>
+                                                        <property name="label">GitHub</property>
+                                                        <child>
+                                                            <object class="GtkImage">
+                                                                <property name="file">launcher-gui/resources/icon/github.svg</property>
+                                                                <property name="pixel-size">48</property>
+                                                            </object>
+                                                        </child>
+                                                    </object>
+                                                </child>
+                                                <child>
+                                                    <object class="GtkLinkButton" id="gitee_link_button">
+                                                        <property name="uri">https://gitee.com/FanGccU/jz-launcher
+                                                        </property>
+                                                        <property name="label">Gitee</property>
+                                                        <child>
+                                                            <object class="GtkImage">
+                                                                <property name="file">launcher-gui/resources/icon/gitee.svg</property>
+                                                                <property name="pixel-size">48</property>
+                                                            </object>
+                                                        </child>
+                                                    </object>
+                                                </child>
+                                            </object>
+                                        </child>
+                                    </object>
+                                </property>
+                            </object>
+                        </child>
+                    </object>
+                </child>
+            </object>
+        </child>
+    </template>
+</interface>

@@ -1,6 +1,10 @@
 use crate::app_data_object::AppDataObject;
 use crate::app_provider::to_data_object;
+use crate::config_data_object::ConfigDataObject;
+use crate::global_constant::SHOW_ACTION;
 use crate::search_result_item::SearchResultItem;
+use crate::settings_window::SettingsWindow;
+use crate::system_env::SystemEnv;
 use adw::gdk::Display;
 use adw::prelude::{ActionMapExt, DisplayExt, ListModelExt, MonitorExt};
 use adw::{gdk, gio};
@@ -9,19 +13,22 @@ use glib::prelude::{Cast, CastNone};
 use glib::subclass::InitializingObject;
 use gtk::gdk::Key;
 use gtk::gio::ListStore;
-use gtk::prelude::{ButtonExt, EditableExt, EntryExt, GtkWindowExt, ListItemExt, WidgetExt};
+use gtk::prelude::{
+    ButtonExt, EditableExt, EntryExt, GtkApplicationExt, GtkWindowExt, ListItemExt, WidgetExt,
+};
 use gtk::subclass::prelude::*;
 use gtk::{
     CompositeTemplate, EventControllerKey, ListItem, ListScrollFlags, SignalListItemFactory,
     SingleSelection, glib,
 };
 use launcher_core::{AppLoader, AppRunner, AppUsage, Env, SearchEngine};
-use std::cell::RefCell;
+use std::cell::{OnceCell, RefCell};
+use std::path::PathBuf;
 
 // 窗口状态对象
 #[derive(CompositeTemplate, Default)]
-#[template(resource = "/org/zhoujing/jz-launcher/ui/window.ui")]
-pub struct Window {
+#[template(resource = "/org/zhoujing/jz-launcher/ui/launcher-window.ui")]
+pub struct LauncherWindow {
     // 透明背景按钮控件
     #[template_child]
     pub background_button: TemplateChild<gtk::Button>,
@@ -37,8 +44,13 @@ pub struct Window {
     // 列表视图
     #[template_child]
     pub result_list: TemplateChild<gtk::ListView>,
+    #[template_child]
+    pub setting_button: TemplateChild<gtk::Button>,
     // 列表视图存储的数据
     pub app_list: RefCell<Option<ListStore>>,
+
+    // *********  配置 *********
+    pub config: OnceCell<ConfigDataObject>,
 
     // *********  core 属性 *********
     // 环境信息
@@ -48,9 +60,9 @@ pub struct Window {
 }
 
 #[glib::object_subclass]
-impl ObjectSubclass for Window {
-    const NAME: &'static str = "MyWindow";
-    type Type = super::Window;
+impl ObjectSubclass for LauncherWindow {
+    const NAME: &'static str = "MyLauncherWindow";
+    type Type = super::LauncherWindow;
     type ParentType = gtk::ApplicationWindow;
 
     fn class_init(klass: &mut Self::Class) {
@@ -64,16 +76,10 @@ impl ObjectSubclass for Window {
     }
 }
 
-impl ObjectImpl for Window {
+impl ObjectImpl for LauncherWindow {
     fn constructed(&self) {
         // 先让父类完成构造
         self.parent_constructed();
-
-        // 加载 core 数据： 1.加载环境信息 2.加载应用程序 3.初始化搜索
-        *self.env.borrow_mut() = Env::load().expect("加载环境失败");
-        let env = self.env.borrow();
-        let apps = AppLoader::load(&env);
-        *self.search_engine.borrow_mut() = SearchEngine::new(apps);
 
         // 配置 gui 数据： 1.配置 ListView 模式和工厂 2.信号回调 3.配置Actions 4.初始化控件样式
         self.setup_model();
@@ -84,12 +90,27 @@ impl ObjectImpl for Window {
     }
 }
 
-impl WidgetImpl for Window {}
-impl WindowImpl for Window {}
-impl ApplicationWindowImpl for Window {}
+impl WidgetImpl for LauncherWindow {}
+impl WindowImpl for LauncherWindow {}
+impl ApplicationWindowImpl for LauncherWindow {}
 
 // 自定义方法实现
-impl Window {
+impl LauncherWindow {
+    /// 加载应用数据
+    pub(super) fn load_apps(&self, config: &ConfigDataObject) {
+        // 加载 core 数据： 1.加载环境信息 2.加载应用程序 3.初始化搜索
+        *self.env.borrow_mut() = Env::load().expect("加载环境失败");
+
+        let desktop_paths: Vec<PathBuf> = config
+            .desktop_scan_path()
+            .iter()
+            .map(|path| PathBuf::from(path))
+            .collect();
+
+        let env = self.env.borrow();
+        let apps = AppLoader::load(&env, desktop_paths);
+        *self.search_engine.borrow_mut() = SearchEngine::new(apps);
+    }
 
     /// 初始化布局样式
     /// 由于 Wayland 安全限制，无法主动调整窗口位置，默认使用透明背景占满整个屏幕，使其主窗口（搜索框）定位
@@ -181,6 +202,7 @@ impl Window {
         self.setup_keyboard_navigation_callback();
         self.setup_search_entry_activate_callback();
         self.setup_list_view_connect_activate_callback();
+        self.setup_setting_button_clicked_callback();
     }
 
     /// 窗口显示-信号
@@ -304,6 +326,32 @@ impl Window {
         ));
     }
 
+    /// 设置按钮点击-信号
+    fn setup_setting_button_clicked_callback(&self) {
+        let launcher_window = self.obj();
+        self.setting_button.connect_clicked(glib::clone!(
+            #[weak]
+            launcher_window,
+            move |_| {
+                let app = launcher_window
+                    .application()
+                    .expect("主窗口没有关联 Application")
+                    .downcast::<adw::Application>()
+                    .expect("Application 类型错误");
+                let config = launcher_window
+                    .imp()
+                    .config
+                    .get()
+                    .expect("获取配置数据失败");
+                let settings_window = SettingsWindow::new(&app, config);
+                settings_window.set_transient_for(Some(&launcher_window));
+
+                launcher_window.hide();
+                settings_window.present();
+            }
+        ));
+    }
+
     /// 通过 Up / Down 键切换选中的列表项
     fn handle_list_navigation(&self, key: Key) {
         let selection = self.get_selection();
@@ -374,13 +422,13 @@ impl Window {
     fn update_search_result(&self, apps: Vec<AppDataObject>) {
         let store = self.get_app_list();
         store.remove_all();
-        
+
         // 限制最多显示 20 个结果
         let max_results = 20;
         for app in apps.iter().take(max_results) {
             store.append(app);
         }
-        
+
         self.scrolled_window.set_visible(!apps.is_empty());
     }
 
@@ -399,6 +447,8 @@ impl Window {
     }
 
     /// 配置 Actions
+    ///
+    /// 注册处： [`crate::main::setup_actions`]
     fn setup_actions(&self) {
         let obj = self.obj();
         // 隐藏 Actions
@@ -411,5 +461,21 @@ impl Window {
             }
         });
         obj.add_action(&hide_action);
+    }
+
+    /// 应用外观配置。
+    pub(super) fn apply_appearance_config(&self, config_data: &ConfigDataObject) {
+        SystemEnv::apply_color_scheme(config_data.theme());
+        let (font_name, _font_size) = SystemEnv::get_system_current_font_info();
+        SystemEnv::apply_font_size(font_name.as_str(), config_data.font_size());
+    }
+
+    /// 应用主窗口快捷键配置。退出快捷键由 main 中的 Application Action 管理。
+    pub(super) fn apply_shortcut_config(&self, config_data: &ConfigDataObject) {
+        let obj = self.obj();
+        if let Some(application) = obj.application().as_ref() {
+            let show_shortcut = config_data.show();
+            application.set_accels_for_action(&format!("win.{}", SHOW_ACTION), &[&show_shortcut]);
+        }
     }
 }

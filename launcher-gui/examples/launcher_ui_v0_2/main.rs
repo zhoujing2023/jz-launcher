@@ -20,8 +20,8 @@ use gtk::prelude::{
     ListModelExt, WidgetExt,
 };
 use gtk::{
-    ApplicationWindow, CssProvider, Entry, EventControllerKey, ListItem, ListView, Orientation,
-    SignalListItemFactory, SingleSelection, gio,
+    ApplicationWindow, Button, CssProvider, Entry, EventControllerKey, ListItem, ListView,
+    Orientation, SignalListItemFactory, SingleSelection, gio,
 };
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -31,7 +31,7 @@ const APP_ID: &str = "debug.zhoujing.jz-launcher";
 fn main() -> ExitCode {
     let app = Application::builder()
         .application_id(APP_ID)
-        .flags(gio::ApplicationFlags::HANDLES_COMMAND_LINE)
+        // .flags(gio::ApplicationFlags::HANDLES_COMMAND_LINE)
         .build();
     app.connect_startup(|app| {
         setup_actions(app);
@@ -46,32 +46,33 @@ fn main() -> ExitCode {
     app.connect_activate(move |app| {
         if window_clone.borrow().is_none() {
             let window = build_ui(&app);
-            window.set_visible(false);
+            // launcher_window.set_visible(false);
+            window.present();
             *window_clone.borrow_mut() = Some(window);
         }
     });
 
     // 命令处理信号
-    let window_clone = window_ref.clone();
-    app.connect_command_line(move |app, cmdline| {
-        let args = cmdline.arguments();
-        println!("参数信息：{:#?}", args);
-        let has_toggle = args
-            .iter()
-            .any(|arg| arg.to_string_lossy().contains("--toggle"));
-        // 初始化窗口，切换显隐状态
-        app.activate();
-        if has_toggle {
-            if let Some(window) = window_clone.borrow().as_ref() {
-                if window.get_visible() {
-                    hide_window(&window);
-                } else {
-                    show_window(&window);
-                }
-            }
-        }
-        ExitCode::SUCCESS
-    });
+    // let window_clone = window_ref.clone();
+    // app.connect_command_line(move |app, cmdline| {
+    //     let args = cmdline.arguments();
+    //     println!("参数信息：{:#?}", args);
+    //     let has_toggle = args
+    //         .iter()
+    //         .any(|arg| arg.to_string_lossy().contains("--toggle"));
+    //     // 初始化窗口，切换显隐状态
+    //     app.activate();
+    //     if has_toggle {
+    //         if let Some(launcher_window) = window_clone.borrow().as_ref() {
+    //             if launcher_window.get_visible() {
+    //                 hide_window(&launcher_window);
+    //             } else {
+    //                 show_window(&launcher_window);
+    //             }
+    //         }
+    //     }
+    //     ExitCode::SUCCESS
+    // });
 
     app.run()
 }
@@ -100,16 +101,34 @@ fn build_ui(app: &Application) -> ApplicationWindow {
         .css_classes(vec!["main-box"])
         .build();
 
+    let subject_box = gtk::Box::builder()
+        .orientation(Orientation::Horizontal)
+        .halign(gtk::Align::Fill)
+        .hexpand(true)
+        .build();
+
     let search_entry = Entry::builder()
         .placeholder_text("请输入内容……")
+        .halign(gtk::Align::Fill)
+        .hexpand(true)
         .margin_top(12)
         .margin_bottom(12)
         .margin_start(12)
-        .margin_end(12)
         .height_request(60)
         .css_classes(vec!["search-entry"])
         .build();
-    main_box.append(&search_entry);
+    subject_box.append(&search_entry);
+
+    let setting_button = Button::builder()
+        .css_classes(vec!["setting-button"])
+        .icon_name("settings")
+        .margin_start(8)
+        .margin_end(8)
+        .valign(gtk::Align::Center)
+        .build();
+    subject_box.append(&setting_button);
+
+    main_box.append(&subject_box);
 
     let list_view = ListView::builder()
         .orientation(Orientation::Vertical)
@@ -165,7 +184,7 @@ fn build_ui(app: &Application) -> ApplicationWindow {
         .default_width(screen_width)
         .default_height(screen_height)
         .decorated(false)
-        .css_classes(vec!["max-window"])
+        .css_classes(vec!["max-launcher_window"])
         .build();
 
     // 遮罩布局
@@ -201,6 +220,12 @@ fn build_ui(app: &Application) -> ApplicationWindow {
     window.connect_close_request(|window| {
         hide_window(window);
         Propagation::Stop
+    });
+
+    // ”设置“按钮点击信号
+    setting_button.connect_clicked(move |_| {
+        // TODO: 跳转设置页面
+        println!("跳转设置页面");
     });
 
     // 配置搜索栏回调

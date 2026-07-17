@@ -22,8 +22,8 @@ pub struct AppearanceConfig {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ShortcutConfig {
-    pub hotkey: String,
-    pub close: String,
+    pub show: String,
+    pub hide: String,
 }
 
 impl Default for Config {
@@ -42,8 +42,8 @@ impl Default for Config {
                 font_size: 11f64,
             },
             shortcut: ShortcutConfig {
-                hotkey: "<Shift>space".to_string(),
-                close: "<Control>q".to_string(),
+                show: "<Shift>space".to_string(),
+                hide: "<Control>q".to_string(),
             },
         }
     }
@@ -54,7 +54,7 @@ impl Config {
     pub fn load() -> Self {
         // let config_path = dirs::config_dir()
         //     .unwrap_or_else(|| PathBuf::from("."))
-        //     .join("jz_tools/config.json");
+        //     .join("jz_tools/config_data_object.json");
         let config_path = PathBuf::from("launcher-gui/examples/settings_ui/mock_config.json");
         if let Ok(content) = std::fs::read_to_string(&config_path) {
             if let Ok(config) = serde_json::from_str::<Config>(&content) {
@@ -73,7 +73,7 @@ impl Config {
         //     .unwrap_or_else(|| PathBuf::from("."))
         //     .join("jz_tools");
         // std::fs::create_dir_all(&config_path)?;
-        // let config_path = config_path.join("config.json");
+        // let config_path = config_path.join("config_data_object.json");
         let config_path = PathBuf::from("launcher-gui/examples/settings_ui/mock_config.json");
         let json = serde_json::to_string_pretty(self)?;
         std::fs::write(config_path, json)?;

@@ -1,5 +1,5 @@
-use launcher_core::AppEntry;
 use crate::app_data_object::AppDataObject;
+use launcher_core::AppEntry;
 
 pub fn to_data_object(app: &AppEntry) -> AppDataObject {
     AppDataObject::new(

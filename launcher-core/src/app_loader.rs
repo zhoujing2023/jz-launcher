@@ -1,21 +1,26 @@
-use crate::app_usage::AppUsage;
 use crate::env::Env;
 use crate::model::{AppEntry, Apps};
-use std::fs::{DirEntry, read_dir, read_to_string};
+use std::collections::HashMap;
+use std::fs::{read_dir, read_to_string, DirEntry};
 use std::path::PathBuf;
 
 /// 应用程序加载器
 pub struct AppLoader;
 
 impl AppLoader {
-    /// `load` 加载应用程序
-    pub fn load(env: &Env) -> Apps {
-        let desktop_paths: Vec<PathBuf> = vec![
+
+    /// 默认 desktop 路径
+    pub fn default_desktop_scan_paths(env: &Env) -> Vec<PathBuf> {
+        vec![
             PathBuf::from("/usr/share/applications"),
             PathBuf::from("/var/lib/snapd/desktop/applications"),
             env.home_dir.join(".local/share/applications"),
             env.home_dir.join("桌面"),
-        ];
+        ]
+    }
+
+    /// `load` 加载应用程序
+    pub fn load(env: &Env, desktop_paths: Vec<PathBuf>) -> Apps {
         // 目录条目集合
         let dir_entry_list = Self::parse_dir_entry(desktop_paths);
         // 应用集合
@@ -62,13 +67,20 @@ impl AppLoader {
             apps.push(app_entry);
         }
 
+        // 根据 exec_cmd 进行去重
+        let mut seen = HashMap::new();
+        let apps: Vec<AppEntry> = apps
+            .into_iter()
+            .filter(|app| seen.insert(app.exec_cmd.clone(), ()).is_none())
+            .collect();
+
         // 读取分数
-        let usage = AppUsage::load(&env);
-        if !usage.scores.is_empty() {
-            for app in &mut apps {
-                *app.score.borrow_mut() = usage.scores.get(&app.desktop_file).copied().unwrap_or(0);
-            }
-        }
+        // let usage = AppUsage::load(&env);
+        // if !usage.scores.is_empty() {
+        //     for app in &mut apps {
+        //         *app.score.borrow_mut() = usage.scores.get(&app.desktop_file).copied().unwrap_or(0);
+        //     }
+        // }
         apps
     }
 

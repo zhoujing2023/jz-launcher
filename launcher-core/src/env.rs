@@ -44,7 +44,7 @@ impl Env {
     /// use launcher_core::Env;
     /// let env = Env::load().unwrap();
     /// let file_path = env.usage_file_path();
-    /// assert!(file_path.ends_with(".config/jz-launcher/usage.json"));
+    /// assert!(file_path.ends_with(".config_data_object/jz-launcher/usage.json"));
     /// ```
     pub fn usage_file_path(&self) -> PathBuf {
         self.usage_dir().join("usage.json")
@@ -58,9 +58,9 @@ impl Env {
     /// use launcher_core::Env;
     /// let env = Env::load().unwrap();
     /// let path = env.usage_dir();
-    /// assert!(path.ends_with(".config/jz-launcher"));
+    /// assert!(path.ends_with(".config_data_object/jz-launcher"));
     /// ```
     pub fn usage_dir(&self) -> PathBuf {
-        self.home_dir.join(format!(".config/{}", ROOT_PROJECT_NAME))
+        self.home_dir.join(format!(".config_data_object/{}", ROOT_PROJECT_NAME))
     }
 }

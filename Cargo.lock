@@ -462,6 +462,7 @@ dependencies = [
 name = "launcher-gui"
 version = "0.1.0"
 dependencies = [
+ "dirs",
  "glib",
  "glib-build-tools",
  "gtk4",

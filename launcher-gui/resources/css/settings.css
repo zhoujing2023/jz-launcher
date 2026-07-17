@@ -28,3 +28,11 @@
     font-size: 16px;
     padding: 2px 4px;
 }
+
+.hint-label {
+    font-size: 14px;
+    color: @theme_text_color;
+    background: alpha(@theme_selected_bg_color, 0.3);
+    border-radius: 5px;
+    padding-bottom: 3px;
+}

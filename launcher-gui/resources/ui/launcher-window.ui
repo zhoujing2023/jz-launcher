@@ -1,15 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-    <template class="MyWindow" parent="GtkApplicationWindow">
+    <requires lib="gtk" version="4.0"/>
+
+    <template class="MyLauncherWindow" parent="GtkApplicationWindow">
         <property name="decorated">False</property>
         <property name="title">JzLauncher</property>
         <property name="default-width">500</property>
         <property name="default-height">66</property>
         <property name="resizable">True</property>
         <property name="name">main-window</property>
+
         <child>
             <object class="GtkOverlay">
-                <!-- 主控件：透明背景，点击关闭 -->
+
+                <!-- 主控件：透明背景按钮，点击关闭 -->
                 <child>
                     <object class="GtkButton" id="background_button">
                         <property name="hexpand">True</property>
@@ -17,6 +21,7 @@
                         <property name="name">background-button</property>
                     </object>
                 </child>
+
                 <!-- 叠加层：主内容 -->
                 <child type="overlay">
                     <object class="GtkBox" id="main_box">
@@ -28,16 +33,42 @@
                         <property name="width-request">400</property>
                         <property name="halign">center</property>
                         <property name="valign">start</property>
+
                         <child>
-                            <object class="GtkEntry" id="search_entry">
-                                <property name="name">search-entry</property>
-                                <property name="height-request">60</property>
-                                <property name="margin-top">10</property>
-                                <property name="margin-bottom">10</property>
-                                <property name="margin-start">10</property>
-                                <property name="margin-end">10</property>
+                            <object class="GtkBox">
+                                <property name="orientation">horizontal</property>
+                                <property name="halign">fill</property>
+                                <property name="hexpand">True</property>
+
+                                <!-- 搜索栏 -->
+                                <child>
+                                    <object class="GtkEntry" id="search_entry">
+                                        <property name="halign">fill</property>
+                                        <property name="hexpand">True</property>
+                                        <property name="name">search-entry</property>
+                                        <property name="height-request">60</property>
+                                        <property name="margin-top">10</property>
+                                        <property name="margin-bottom">10</property>
+                                        <property name="margin-start">10</property>
+                                    </object>
+                                </child>
+
+                                <!-- 设置 -->
+                                <child>
+                                    <object class="GtkButton" id="setting_button">
+                                        <property name="icon-name">settings</property>
+                                        <property name="margin-start">8</property>
+                                        <property name="margin-end">8</property>
+                                        <property name="valign">center</property>
+                                        <style>
+                                            <class name="setting-button"/>
+                                        </style>
+                                    </object>
+                                </child>
                             </object>
                         </child>
+
+                        <!-- 滚动窗口 -->
                         <child>
                             <object class="GtkScrolledWindow" id="scrolled_window">
                                 <property name="hscrollbar-policy">never</property>
@@ -45,6 +76,8 @@
                                 <property name="propagate-natural-height">True</property>
                                 <property name="max-content-height">600</property>
                                 <property name="visible">False</property>
+
+                                <!-- 列表视图（搜索结果项） -->
                                 <child>
                                     <object class="GtkListView" id="result_list">
                                         <property name="name">result-list</property>

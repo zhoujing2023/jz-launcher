@@ -7,13 +7,7 @@ glib::wrapper! {
 }
 
 impl AppDataObject {
-    pub fn new(
-        name: &str,
-        desktop_file: &str,
-        icon: &str,
-        exec_cmd: &str,
-        comment: &str,
-    ) -> Self {
+    pub fn new(name: &str, desktop_file: &str, icon: &str, exec_cmd: &str, comment: &str) -> Self {
         Object::builder()
             .property("name", name)
             .property("desktop_file", desktop_file)

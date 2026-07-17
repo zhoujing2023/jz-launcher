@@ -28,3 +28,13 @@
 .result-list {
     border-radius: 0 0 10px 10px;
 }
+
+.setting-button image {
+    color: @theme_fg_color;
+    -gtk-icon-size: 24px;
+}
+
+.setting-button {
+    padding-top: 10px;
+    padding-bottom: 10px;
+}

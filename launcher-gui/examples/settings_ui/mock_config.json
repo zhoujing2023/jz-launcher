@@ -12,7 +12,7 @@
     "font_size": 12.0
   },
   "shortcut": {
-    "hotkey": "<Shift>space",
-    "close": "<Control>q"
+    "show": "<Shift>space",
+    "hide": "<Control>q"
   }
 }

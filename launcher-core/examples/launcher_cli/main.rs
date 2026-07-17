@@ -8,7 +8,8 @@ fn main() -> anyhow::Result<()> {
     let env = Env::load().context("获取环境数据失败")?;
     println!("获取环境数据成功：\n{:#?}", env);
     println!("********* 开始检索 desktop *********");
-    let apps = AppLoader::load(&env);
+    let default_paths = AppLoader::default_desktop_scan_paths(&env);
+    let apps = AppLoader::load(&env, default_paths);
     println!("********* 检索完毕 *********");
     if apps.is_empty() {
         println!("没有找到应用程序。。。");
