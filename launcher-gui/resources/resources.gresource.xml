@@ -9,5 +9,7 @@
         <file compressed="true" preprocess="xml-stripblanks">ui/search-result-item.ui</file>
         <file compressed="true">css/launcher.css</file>
         <file compressed="true">css/settings.css</file>
+        <file compressed="true">icon/gitee.svg</file>
+        <file compressed="true">icon/github.svg</file>
     </gresource>
 </gresources>

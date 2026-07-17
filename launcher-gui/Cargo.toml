@@ -35,10 +35,6 @@ name = "launcher_ui_v0_4"
 path = "examples/launcher_ui_v0_4/main.rs"
 
 [[example]]
-name = "launcher_with_tray"
-path = "examples/launcher_with_tray/main.rs"
-
-[[example]]
 name = "window_toggle_demo"
 path = "examples/window_toggle_demo/main.rs"
 

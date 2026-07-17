@@ -55,6 +55,7 @@
                                                 <property name="orientation">horizontal</property>
                                                 <property name="spacing">12</property>
                                                 <property name="halign">start</property>
+                                                <property name="visible">False</property> <!-- 隐藏：暂不使用 -->
                                                 <child>
                                                     <object class="GtkLabel">
                                                         <property name="label">开机时自动运行</property>
@@ -336,7 +337,7 @@
                                                         <property name="label">GitHub</property>
                                                         <child>
                                                             <object class="GtkImage">
-                                                                <property name="file">launcher-gui/resources/icon/github.svg</property>
+                                                                <property name="resource">/org/zhoujing/jz-launcher/icon/github.svg</property>
                                                                 <property name="pixel-size">48</property>
                                                             </object>
                                                         </child>
@@ -349,7 +350,7 @@
                                                         <property name="label">Gitee</property>
                                                         <child>
                                                             <object class="GtkImage">
-                                                                <property name="file">launcher-gui/resources/icon/gitee.svg</property>
+                                                                <property name="resource">/org/zhoujing/jz-launcher/icon/gitee.svg</property>
                                                                 <property name="pixel-size">48</property>
                                                             </object>
                                                         </child>

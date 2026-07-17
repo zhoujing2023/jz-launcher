@@ -1,5 +1,4 @@
 mod app_data_object;
-mod app_provider;
 mod config_data_object;
 mod global_constant;
 mod launcher_window;
@@ -178,7 +177,7 @@ fn setup_actions(app: &Application, config: &ConfigDataObject) {
     app.set_accels_for_action(&format!("win.{}", HIDE_ACTION), &["Escape"]);
 }
 
-/// 配置属性变化时统一持久化，不依赖设置窗口是否已经打开。
+/// 配置属性变化时统一持久化
 fn setup_config_auto_save(config: &ConfigDataObject) {
     config.connect_notify_local(None, |config, property| {
         if let Err(err) = config.save() {

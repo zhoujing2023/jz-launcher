@@ -65,6 +65,7 @@ impl ObjectSubclass for SettingsWindow {
 impl ObjectImpl for SettingsWindow {
     fn constructed(&self) {
         self.parent_constructed();
+        // 配置信号回调
         self.setup_callbacks();
     }
 }
@@ -86,23 +87,28 @@ impl SettingsWindow {
 
     /// 加载配置
     pub(super) fn apply_config(&self, config_data: &ConfigDataObject) {
-        // 配置绑定关系
+        // 配置字段绑定关系
         self.setup_bind(&config_data);
 
-        // 建立快捷键按键监听关系
+        // 配置快捷键按键监听关系
         let show_entry = self.show_shortcut_entry.get();
         self.setup_bind_shortcut_keys(&show_entry);
         let quit_entry = self.quit_shortcut_entry.get();
         self.setup_bind_shortcut_keys(&quit_entry);
 
+        // 获取自定义快捷键命令
         let exec_path = SystemEnv::get_executable_path();
         let hint_label = format!("{} --toggle", exec_path);
         self.hint_label_entry.set_text(hint_label.as_str());
     }
 
+
+    #[deprecated(
+        since = "1.0.0",
+        note = "由用户自定义快捷键启动，不提供自动启动"
+    )]
     fn auto_start_switch_state_callback(&self) {
         self.auto_start_switch.connect_state_set(move |_, state| {
-            // TODO: 修改启动项
             if state {
                 println!("设置开机时自动启动……");
             } else {
@@ -113,6 +119,9 @@ impl SettingsWindow {
     }
 
     /// 编辑按钮点击时-信号
+    /// 1.启动 desktop path内容输入框
+    /// 2.隐藏“编辑按钮”
+    /// 3.将当前数据临时存储，点击“取消按钮”时回退
     fn desktop_paths_edit_button_clicked_callback(&self) {
         let origin_text_data_clone = self.desktop_paths_temp_data.clone();
 
@@ -143,6 +152,10 @@ impl SettingsWindow {
     }
 
     /// 保存按钮点击时-信号
+    /// 1.禁用 desktop path内容输入框
+    /// 2.隐藏“保存按钮”和“取消按钮”
+    /// 3.将临时数据清空
+    /// 4.手动更新 config 数据
     fn desktop_paths_save_button_clicked_callback(&self) {
         let settings_window = self.obj();
         // 将临时数据清空
@@ -184,11 +197,15 @@ impl SettingsWindow {
                     .expect("获取配置数据失败");
                 config.set_desktop_scan_path(new_desktop_paths_value);
                 // 通过 config 属性变更信号-更新 desktop 列表
+                // 实现处：[`launcher_window::mod::setup_config_callbacks`]
             }
         ));
     }
 
     /// 取消按钮点击时-信号
+    /// 1.禁用 desktop path内容输入框
+    /// 2.隐藏“保存按钮”和“取消按钮”
+    /// 3.将临时数据覆盖编辑数据，最后清空临时数据
     fn desktop_paths_cancel_button_clicked_callback(&self) {
         // 编辑前的数据
         let desktop_paths_temp_data = self.desktop_paths_temp_data.clone();
@@ -287,6 +304,9 @@ impl SettingsWindow {
                 shortcut_str.push_str(&key_name);
                 entry.set_text(&shortcut_str);
                 Propagation::Stop
+                // 通过 config 属性变更信号-更新 desktop 列表
+                // 实现处：显示按钮 [`launcher_window::mod::setup_config_callbacks`]
+                //        隐藏按钮 [`main::setup_actions`]
             }
         ));
         // 设置为捕获阶段，用于全局快捷键

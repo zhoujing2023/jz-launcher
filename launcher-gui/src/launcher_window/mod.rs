@@ -1,4 +1,5 @@
 mod imp;
+mod app_provider;
 
 use crate::config_data_object::ConfigDataObject;
 use glib::Object;

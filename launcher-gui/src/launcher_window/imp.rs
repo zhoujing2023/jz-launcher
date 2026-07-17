@@ -1,5 +1,5 @@
 use crate::app_data_object::AppDataObject;
-use crate::app_provider::to_data_object;
+use crate::launcher_window::app_provider::to_data_object;
 use crate::config_data_object::ConfigDataObject;
 use crate::global_constant::SHOW_ACTION;
 use crate::search_result_item::SearchResultItem;
