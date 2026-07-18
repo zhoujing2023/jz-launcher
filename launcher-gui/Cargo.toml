@@ -1,10 +1,13 @@
 [package]
 name = "launcher-gui"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2024"
 description = "Linux Desktop Launcher"
 license = "MIT"
 authors = ["Zhou Jing <helloworldzhoujing@163.com>"]
+#documentation = "暂无文档页"
+homepage = "https://github.com/zhoujing2023/jz-launcher"
+repository = "https://github.com/zhoujing2023/jz-launcher"
 
 [dependencies]
 launcher-core = {path = "../launcher-core"}
