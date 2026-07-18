@@ -34,8 +34,6 @@ pub struct SettingsWindow {
     #[template_child]
     pub font_adjustment: TemplateChild<gtk::Adjustment>,
     #[template_child]
-    pub show_shortcut_entry: TemplateChild<Entry>,
-    #[template_child]
     pub quit_shortcut_entry: TemplateChild<Entry>,
     #[template_child]
     pub hint_label_entry: TemplateChild<Entry>,
@@ -88,8 +86,6 @@ impl SettingsWindow {
         self.setup_bind(&config_data);
 
         // 配置快捷键按键监听关系
-        let show_entry = self.show_shortcut_entry.get();
-        self.setup_bind_shortcut_keys(&show_entry);
         let quit_entry = self.quit_shortcut_entry.get();
         self.setup_bind_shortcut_keys(&quit_entry);
 
@@ -315,12 +311,6 @@ impl SettingsWindow {
         let font_adjustment = self.font_adjustment.get();
         config_object
             .bind_property("font-size", &font_adjustment, "value")
-            .sync_create()
-            .bidirectional()
-            .build();
-        let show_shortcut_entry = self.show_shortcut_entry.get();
-        config_object
-            .bind_property("show", &show_shortcut_entry, "text")
             .sync_create()
             .bidirectional()
             .build();

@@ -56,7 +56,7 @@
                                 <!-- 设置 -->
                                 <child>
                                     <object class="GtkButton" id="setting_button">
-                                        <property name="icon-name">settings</property>
+                                        <property name="icon-name">preferences-system-symbolic</property>
                                         <property name="margin-start">8</property>
                                         <property name="margin-end">8</property>
                                         <property name="valign">center</property>

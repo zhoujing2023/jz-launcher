@@ -17,7 +17,6 @@ pub struct AppearanceConfig {
 
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct ShortcutConfig {
-    pub show: String,
     pub quit: String,
 }
 
@@ -52,7 +51,6 @@ impl Default for ConfigData {
                 font_size: 11f64,
             },
             shortcut: ShortcutConfig {
-                show: "<Shift>space".to_string(),
                 quit: "<Control>q".to_string(),
             },
         }

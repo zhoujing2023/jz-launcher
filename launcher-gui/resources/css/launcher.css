@@ -1,6 +1,6 @@
 #main-box {
     border-radius: 10px;
-    background: @theme_bg_color;
+    background: @window_bg_color;
 }
 
 #result-list {
@@ -52,7 +52,7 @@
 }
 
 .setting-button image {
-    color: @theme_text_color;
+    color: @window_fg_color;
     -gtk-icon-size: 24px;
 }
 

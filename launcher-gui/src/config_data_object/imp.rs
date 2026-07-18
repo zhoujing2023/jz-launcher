@@ -19,8 +19,6 @@ pub struct ConfigDataObject {
 
     // 快捷键
     #[property(get, set)]
-    pub show: RefCell<String>,
-    #[property(get, set)]
     pub quit: RefCell<String>,
 }
 

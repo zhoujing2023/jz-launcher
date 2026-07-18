@@ -59,7 +59,7 @@
 
                                         <child>
                                             <object class="GtkScrolledWindow" id="desktop_paths_scrolled_window">
-                                                <property name="height-request">200</property>
+                                                <property name="height-request">260</property>
                                                 <property name="hexpand">True</property>
                                                 <property name="halign">fill</property>
                                                 <property name="hscrollbar-policy">automatic</property>
@@ -207,24 +207,26 @@
                                                 <property name="halign">start</property>
                                                 <child>
                                                     <object class="GtkLabel">
-                                                        <property name="label">显示</property>
+                                                        <property name="label">热键</property>
                                                         <property name="halign">start</property>
                                                         <property name="hexpand">True</property>
                                                         <property name="xalign">0</property>
                                                     </object>
                                                 </child>
                                                 <child>
-                                                    <object class="GtkEntry" id="show_shortcut_entry">
+                                                    <object class="GtkEntry">
                                                         <property name="editable">False</property>
+                                                        <property name="sensitive">False</property>
                                                         <property name="width-request">240</property>
-                                                        <property name="placeholder-text">点击后按下新的组合键</property>
+                                                        <property name="text"><![CDATA[<Shift>space]]></property>
+                                                        <property name="tooltip-text">该快捷键无法在应用内配置，请到系统设置的自定义快捷键中手动配置</property>
                                                     </object>
                                                 </child>
                                             </object>
                                         </child>
                                         <child>
                                             <object class="GtkLabel">
-                                                <property name="label">由于 Wayland 安全限制，需用户手动到“设置-键盘-自定义快捷键”配置以下指令：</property>
+                                                <property name="label">热键快捷键无法在应用内配置，请手动到“设置-键盘-自定义快捷键”配置以下指令：</property>
                                                 <property name="halign">fill</property>
                                                 <property name="wrap">True</property>
                                                 <property name="hexpand">True</property>

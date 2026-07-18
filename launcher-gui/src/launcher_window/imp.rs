@@ -1,25 +1,25 @@
 use crate::app_data_object::AppDataObject;
-use crate::launcher_window::app_provider::to_data_object;
 use crate::config_data_object::ConfigDataObject;
-use crate::global_constant::SHOW_ACTION;
+use crate::global_constant::HIDE_ACTION;
+use crate::launcher_window::app_provider::to_data_object;
 use crate::search_result_item::SearchResultItem;
 use crate::settings_window::SettingsWindow;
 use crate::system_env::SystemEnv;
 use adw::gdk::Display;
 use adw::prelude::{ActionMapExt, DisplayExt, ListModelExt, MonitorExt};
 use adw::{gdk, gio};
-use glib::Propagation;
 use glib::prelude::{Cast, CastNone};
 use glib::subclass::InitializingObject;
+use glib::Propagation;
 use gtk::gdk::Key;
 use gtk::gio::ListStore;
 use gtk::prelude::{
-    ButtonExt, EditableExt, EntryExt, GtkApplicationExt, GtkWindowExt, ListItemExt, WidgetExt,
+    ButtonExt, EditableExt, EntryExt, GtkWindowExt, ListItemExt, WidgetExt,
 };
 use gtk::subclass::prelude::*;
 use gtk::{
-    CompositeTemplate, EventControllerKey, ListItem, ListScrollFlags, SignalListItemFactory,
-    SingleSelection, glib,
+    glib, CompositeTemplate, EventControllerKey, ListItem, ListScrollFlags,
+    SignalListItemFactory, SingleSelection,
 };
 use launcher_core::{AppLoader, AppRunner, AppUsage, Env, SearchEngine};
 use std::cell::{OnceCell, RefCell};
@@ -451,8 +451,9 @@ impl LauncherWindow {
     /// 注册处： [`crate::main::setup_actions`]
     fn setup_actions(&self) {
         let obj = self.obj();
+
         // 隐藏 Actions
-        let hide_action = gio::SimpleAction::new("hide", None);
+        let hide_action = gio::SimpleAction::new(HIDE_ACTION, None);
         hide_action.connect_activate(glib::clone! {
             #[weak]
             obj,
@@ -468,14 +469,5 @@ impl LauncherWindow {
         SystemEnv::apply_color_scheme(config_data.theme());
         let (font_name, _font_size) = SystemEnv::get_system_current_font_info();
         SystemEnv::apply_font_size(font_name.as_str(), config_data.font_size());
-    }
-
-    /// 应用主窗口快捷键配置。退出快捷键由 main 中的 Application Action 管理。
-    pub(super) fn apply_shortcut_config(&self, config_data: &ConfigDataObject) {
-        let obj = self.obj();
-        if let Some(application) = obj.application().as_ref() {
-            let show_shortcut = config_data.show();
-            application.set_accels_for_action(&format!("win.{}", SHOW_ACTION), &[&show_shortcut]);
-        }
     }
 }

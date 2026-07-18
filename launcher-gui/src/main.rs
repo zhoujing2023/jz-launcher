@@ -8,8 +8,8 @@ mod system_env;
 
 use crate::config_data_object::ConfigDataObject;
 use crate::global_constant::{HIDE_ACTION, QUIT_ACTION};
-use adw::Application;
 use adw::prelude::{ActionMapExt, ApplicationCommandLineExt};
+use adw::Application;
 use glib::ExitCode;
 use gtk::gdk::Display;
 use gtk::gio;
@@ -173,6 +173,7 @@ fn setup_actions(app: &Application, config: &ConfigDataObject) {
             app.set_accels_for_action(&format!("app.{}", QUIT_ACTION), &[&config.quit()]);
         }
     ));
+
     // 隐藏 Actions
     app.set_accels_for_action(&format!("win.{}", HIDE_ACTION), &["Escape"]);
 }

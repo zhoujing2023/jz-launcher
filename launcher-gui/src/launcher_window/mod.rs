@@ -24,7 +24,6 @@ impl LauncherWindow {
             .expect("config 应当仅初始化一次");
         window.imp().load_apps(config);
         window.imp().apply_appearance_config(config);
-        window.imp().apply_shortcut_config(config);
         window.setup_config_callbacks(config);
         window
     }
@@ -47,12 +46,6 @@ impl LauncherWindow {
             #[weak(rename_to = window)]
             self,
             move |config| window.imp().apply_appearance_config(config)
-        ));
-
-        config.connect_show_notify(glib::clone!(
-            #[weak(rename_to = window)]
-            self,
-            move |config| window.imp().apply_shortcut_config(config)
         ));
     }
 
