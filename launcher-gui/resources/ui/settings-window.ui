@@ -293,7 +293,6 @@
                                         </child>
                                         <child>
                                             <object class="GtkLabel" id="version_label">
-                                                <property name="label">v0.1.0</property>
                                                 <property name="halign">center</property>
                                             </object>
                                         </child>

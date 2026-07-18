@@ -37,6 +37,8 @@ pub struct SettingsWindow {
     pub quit_shortcut_entry: TemplateChild<Entry>,
     #[template_child]
     pub hint_label_entry: TemplateChild<Entry>,
+    #[template_child]
+    pub version_label: TemplateChild<gtk::Label>,
     // Desktop paths 修改前的数据（临时数据）
     desktop_paths_temp_data: Rc<RefCell<String>>,
     // 配置
@@ -63,6 +65,8 @@ impl ObjectImpl for SettingsWindow {
         self.parent_constructed();
         // 配置信号回调
         self.setup_callbacks();
+        // 加载项目版本号
+        self.load_project_version();
     }
 }
 
@@ -320,5 +324,11 @@ impl SettingsWindow {
             .sync_create()
             .bidirectional()
             .build();
+    }
+
+    /// 加载项目版本号
+    fn load_project_version(&self) {
+        let version = env!("CARGO_PKG_VERSION");
+        self.version_label.set_label(version);
     }
 }
