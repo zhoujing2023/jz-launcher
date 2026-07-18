@@ -1,19 +1,25 @@
-JzLauncher 安装说明
-===================
+JzLauncher 安装与打包说明
+=========================
+
+JzLauncher 提供 deb、rpm、AppImage 和源码 tar.gz 四种发布格式。
 
 1. 系统要求
 -----------
 
-- Linux 桌面环境
-- Rust 1.85 或更高版本（项目使用 Rust 2024 Edition）
+- Linux 桌面环境（X11 或 Wayland）
+- Rust 1.85 或更高版本（仅从源码构建时需要）
 - GTK 4.22 或更高版本
 - libadwaita 1.9 或更高版本
-- pkg-config 和 C/C++ 基础构建工具
+- pkg-config 和 C/C++ 基础构建工具（仅从源码构建时需要）
 
-Debian/Ubuntu 可使用以下命令安装系统构建依赖：
+Debian/Ubuntu 构建依赖：
 
     sudo apt update
     sudo apt install build-essential pkg-config libgtk-4-dev libadwaita-1-dev
+
+Fedora 构建依赖：
+
+    sudo dnf install gcc pkgconf-pkg-config gtk4-devel libadwaita-devel
 
 如果系统软件源提供的 GTK 或 libadwaita 版本低于上述要求，需要升级到
 兼容版本后再进行构建。
@@ -24,48 +30,141 @@ Rust 工具链推荐通过 rustup 安装：
     rustup toolchain install stable
     rustup default stable
 
-2. 从源码构建
--------------
+2. 安装 deb 软件包
+------------------
 
-在项目根目录执行：
+deb 适用于 Debian、Ubuntu 及其衍生发行版：
 
-    cargo build --release -p launcher-gui
+    sudo apt install ./jz-launcher_*.deb
 
-构建完成后的可执行文件位于：
-
-    target/release/jz-launcher
-
-可以直接运行：
-
-    ./target/release/jz-launcher --toggle
-
-3. 构建并安装 deb 软件包
-------------------------
-
-首先安装 cargo-deb：
-
-    cargo install cargo-deb
-
-然后在项目根目录执行：
-
-    cargo build --release -p launcher-gui
-    cargo deb -p launcher-gui
-
-生成的软件包位于 target/debian 目录。可使用以下命令安装：
-
-    sudo apt install ./target/debian/jz-launcher_*.deb
-
-卸载软件包：
-
-    sudo apt remove jz-launcher
-
-4. 全局快捷键
--------------
-
-GTK 应用内快捷键无法在窗口隐藏或其他应用获得焦点时唤起 JzLauncher。
-请在桌面环境的“设置 -> 键盘 -> 自定义快捷键”中添加快捷键，并将命令设置为：
+运行：
 
     /usr/bin/jz-launcher --toggle
 
-从源码直接运行且未安装 deb 软件包时，请将命令中的可执行文件替换为
-target/release/jz-launcher 的绝对路径。
+卸载：
+
+    sudo apt remove jz-launcher
+
+3. 安装 rpm 软件包
+------------------
+
+Fedora、RHEL、Rocky Linux 及兼容发行版推荐使用 DNF 安装，以便自动处理依赖：
+
+    sudo dnf install ./jz-launcher-*.rpm
+
+运行：
+
+    /usr/bin/jz-launcher --toggle
+
+卸载：
+
+    sudo dnf remove jz-launcher
+
+4. 运行 AppImage
+----------------
+
+AppImage 无需安装。下载后添加执行权限：
+
+    chmod +x ./jz-launcher_*.AppImage
+
+重要：直接双击 AppImage 不会显示 JzLauncher 窗口。这是当前 AppImage 的
+启动方式，并不表示程序损坏或启动失败。必须在命令行中追加 -- --toggle：
+
+    ./jz-launcher_*.AppImage -- --toggle
+
+第一个 -- 用于将后面的 --toggle 转交给 AppImage 内部的 JzLauncher 程序。
+
+如果需要配置全局快捷键，请使用 AppImage 文件的绝对路径：
+
+    /绝对路径/jz-launcher_版本_架构.AppImage -- --toggle
+
+移动或重命名 AppImage 后，需要同步更新系统快捷键中的命令路径。
+
+5. 从源码包构建
+---------------
+
+解压源码包并进入项目目录：
+
+    tar -xzf jz-launcher-*.tar.gz
+    cd jz-launcher-*/
+
+构建 release 版本：
+
+    cargo build --release -p launcher-gui
+
+生成的可执行文件位于：
+
+    target/release/jz-launcher
+
+运行：
+
+    ./target/release/jz-launcher --toggle
+
+6. 配置全局快捷键
+-----------------
+
+GTK 应用内快捷键无法在窗口隐藏或其他应用获得焦点时唤起 JzLauncher，
+因此需要在桌面环境的“设置 -> 键盘 -> 自定义快捷键”中手动添加快捷键。
+
+不同发布格式对应的命令如下：
+
+deb 或 rpm：
+
+    /usr/bin/jz-launcher --toggle
+
+AppImage：
+
+    /绝对路径/jz-launcher_版本_架构.AppImage -- --toggle
+
+源码构建：
+
+    /源码绝对路径/target/release/jz-launcher --toggle
+
+7. 制作发布包（维护者）
+-----------------------
+
+制作所有发布包前，先确认版本号正确，并构建 release 二进制文件：
+
+    cargo build --release -p launcher-gui
+
+制作 deb：
+
+    cargo install cargo-deb
+    cargo deb -p launcher-gui
+
+deb 输出目录：
+
+    target/debian/
+
+制作 rpm：
+
+    cargo install cargo-generate-rpm
+    cargo generate-rpm -p launcher-gui
+
+rpm 输出目录：
+
+    target/generate-rpm/
+
+制作 AppImage：
+
+    cargo install cargo-packager
+    cd launcher-gui
+    cargo packager --release
+
+AppImage 输出目录：
+
+    target/packages/
+
+回到项目根目录，制作当前 Git HEAD 的源码包：
+
+    cd ..
+    ./scripts/package-source.sh
+
+源码包输出目录：
+
+    dist/
+
+源码打包脚本只会包含已经提交到 Git 的文件。制作正式发布包前，请先提交
+需要发布的修改，并建议使用版本标签作为打包引用：
+
+    ./scripts/package-source.sh dist v1.0.0
