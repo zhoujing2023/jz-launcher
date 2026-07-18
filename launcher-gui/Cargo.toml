@@ -2,7 +2,7 @@
 name = "launcher-gui"
 version = "0.1.0"
 edition = "2024"
-description = "Linux 桌面程序启动器"
+description = "Linux Desktop Launcher"
 license = "MIT"
 authors = ["Zhou Jing <helloworldzhoujing@163.com>"]
 
@@ -49,6 +49,7 @@ name = "jz-launcher"
 path = "src/main.rs"
 
 # Deb 打包配置
+# 打包指令：cargo deb
 [package.metadata.deb]
 name = "jz-launcher"
 maintainer = "Zhou Jing <helloworldzhoujing@163.com>"
@@ -71,3 +72,40 @@ mode = "644"
 source = "resources/jz-launcher.desktop"
 dest = "/usr/share/applications/jz-launcher.desktop"
 mode = "644"
+
+# RPM 打包配置（cargo-generate-rpm）
+# 打包指令
+# cargo build --release -p launcher-gui
+# cargo generate-rpm -p launcher-gui
+[package.metadata.generate-rpm]
+name = "jz-launcher"
+release = "1"
+assets = [
+    { source = "../target/release/jz-launcher", dest = "/usr/bin/jz-launcher", mode = "755" },
+    { source = "resources/icon/jz-launcher.svg", dest = "/usr/share/icons/hicolor/scalable/apps/jz-launcher.svg", mode = "644" },
+    { source = "resources/jz-launcher.desktop", dest = "/usr/share/applications/jz-launcher.desktop", mode = "644" },
+]
+
+# Fedora/RHEL 系发行版的运行时包名
+[package.metadata.generate-rpm.requires]
+gtk4 = "*"
+libadwaita = "*"
+glib2 = "*"
+
+# AppImage 打包配置
+# 打包指令
+# cd launcher-gui
+# cargo packager --release
+# 不能直接双击运行，需要通过指令在AppImage后面加 -- --toggle 参数。如：……/jz-launcher_0.1.0_x86_64.AppImage -- --toggle
+[package.metadata.packager]
+product-name = "JzLauncher"
+identifier = "org.zhoujing.jz-launcher"
+formats = ["appimage"]
+before-packaging-command = "cargo build --release -p launcher-gui"
+icons = ["resources/icon/jz-launcher.png"]
+out-dir = "../target/packages"
+binaries-dir = "../target/release"
+
+[[package.metadata.packager.binaries]]
+path = "jz-launcher"
+main = true
