@@ -6,7 +6,6 @@ const FILE_NAME: &str = "config.json";
 
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct GeneralConfig {
-    pub auto_start_at_boot: bool,
     pub desktop_scan_path: Vec<String>,
 }
 
@@ -46,7 +45,6 @@ impl Default for ConfigData {
 
         Self {
             general: GeneralConfig {
-                auto_start_at_boot: false,
                 desktop_scan_path: desktop_paths,
             },
             appearance: AppearanceConfig {

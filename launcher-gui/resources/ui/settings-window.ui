@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-    <!--    <requires lib="gtk" version="4.0"/>-->
 
     <template class="MySettingWindow" parent="GtkApplicationWindow">
         <property name="title">设置</property>
@@ -51,26 +50,6 @@
                                         <property name="valign">start</property>
 
                                         <child>
-                                            <object class="GtkBox">
-                                                <property name="orientation">horizontal</property>
-                                                <property name="spacing">12</property>
-                                                <property name="halign">start</property>
-                                                <property name="visible">False</property> <!-- 隐藏：暂不使用 -->
-                                                <child>
-                                                    <object class="GtkLabel">
-                                                        <property name="label">开机时自动运行</property>
-                                                        <property name="halign">start</property>
-                                                        <property name="hexpand">True</property>
-                                                        <property name="xalign">0</property>
-                                                    </object>
-                                                </child>
-                                                <child>
-                                                    <object class="GtkSwitch" id="auto_start_switch"/>
-                                                </child>
-                                            </object>
-                                        </child>
-
-                                        <child>
                                             <object class="GtkLabel">
                                                 <property name="label">Desktop 路径：</property>
                                                 <property name="halign">start</property>
@@ -90,8 +69,7 @@
                                                         <property name="wrap-mode">none</property>
                                                         <property name="margin-top">3</property>
                                                         <property name="margin-bottom">3</property>
-                                                        <property name="tooltip-text">Desktop 路径，通过换行区分目录
-                                                        </property>
+                                                        <property name="tooltip-text">Desktop 路径，通过换行区分目录</property>
                                                         <property name="editable">False</property>
                                                         <property name="monospace">True</property>
                                                         <style>
@@ -239,8 +217,7 @@
                                                     <object class="GtkEntry" id="show_shortcut_entry">
                                                         <property name="editable">False</property>
                                                         <property name="width-request">240</property>
-                                                        <property name="placeholder-text">点击后按下新的组合键
-                                                        </property>
+                                                        <property name="placeholder-text">点击后按下新的组合键</property>
                                                     </object>
                                                 </child>
                                             </object>
@@ -279,8 +256,7 @@
                                                     <object class="GtkEntry" id="quit_shortcut_entry">
                                                         <property name="editable">False</property>
                                                         <property name="width-request">240</property>
-                                                        <property name="placeholder-text">点击后按下新的组合键
-                                                        </property>
+                                                        <property name="placeholder-text">点击后按下新的组合键</property>
                                                     </object>
                                                 </child>
                                             </object>
@@ -332,8 +308,7 @@
                                                 <property name="spacing">16</property>
                                                 <child>
                                                     <object class="GtkLinkButton" id="github_link_button">
-                                                        <property name="uri">https://github.com/zhoujing2023/jz-launcher
-                                                        </property>
+                                                        <property name="uri">https://github.com/zhoujing2023/jz-launcher</property>
                                                         <property name="label">GitHub</property>
                                                         <child>
                                                             <object class="GtkImage">
@@ -345,8 +320,7 @@
                                                 </child>
                                                 <child>
                                                     <object class="GtkLinkButton" id="gitee_link_button">
-                                                        <property name="uri">https://gitee.com/FanGccU/jz-launcher
-                                                        </property>
+                                                        <property name="uri">https://gitee.com/FanGccU/jz-launcher</property>
                                                         <property name="label">Gitee</property>
                                                         <child>
                                                             <object class="GtkImage">

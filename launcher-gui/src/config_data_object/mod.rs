@@ -12,7 +12,6 @@ glib::wrapper! {
 
 impl ConfigDataObject {
     pub fn new(
-        auto_start_at_boot: bool,
         desktop_scan_path: Vec<String>,
         theme: u32,
         font_size: f64,
@@ -20,7 +19,6 @@ impl ConfigDataObject {
         quit: &str,
     ) -> Self {
         Object::builder()
-            .property("auto-start-at-boot", auto_start_at_boot)
             .property("desktop-scan-path", desktop_scan_path)
             .property("theme", theme)
             .property("font-size", font_size)
@@ -32,7 +30,6 @@ impl ConfigDataObject {
     pub fn load() -> Result<Self, std::io::Error> {
         let data = ConfigData::load()?;
         Ok(Self::new(
-            data.general.auto_start_at_boot,
             data.general.desktop_scan_path,
             data.appearance.theme,
             data.appearance.font_size,
@@ -44,7 +41,6 @@ impl ConfigDataObject {
     pub fn save(&self) -> Result<(), std::io::Error> {
         ConfigData {
             general: GeneralConfig {
-                auto_start_at_boot: self.property("auto-start-at-boot"),
                 desktop_scan_path: self.property("desktop-scan-path"),
             },
             appearance: AppearanceConfig {
@@ -64,7 +60,6 @@ impl Default for ConfigDataObject {
     fn default() -> Self {
         let data = ConfigData::default();
         Self::new(
-            data.general.auto_start_at_boot,
             data.general.desktop_scan_path,
             data.appearance.theme,
             data.appearance.font_size,

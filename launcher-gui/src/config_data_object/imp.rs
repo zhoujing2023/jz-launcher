@@ -8,8 +8,6 @@ use std::cell::{Cell, RefCell};
 #[properties(wrapper_type = super::ConfigDataObject)]
 pub struct ConfigDataObject {
     // 通用
-    #[property(name = "auto-start-at-boot", get, set)]
-    pub auto_start_at_boot: Cell<bool>,
     #[property(name = "desktop-scan-path", get, set)]
     pub desktop_scan_path: RefCell<Vec<String>>,
 

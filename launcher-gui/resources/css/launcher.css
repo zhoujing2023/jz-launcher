@@ -52,12 +52,12 @@
 }
 
 .setting-button image {
-    color: @theme_fg_color;
+    color: @theme_text_color;
     -gtk-icon-size: 24px;
 }
 
 .setting-button {
     padding-top: 10px;
     padding-bottom: 10px;
-    background: @theme_bg_color;
+    background: transparent;
 }

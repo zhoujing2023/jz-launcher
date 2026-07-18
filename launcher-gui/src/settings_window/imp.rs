@@ -20,8 +20,6 @@ pub struct SettingsWindow {
     #[template_child]
     pub content_stack: TemplateChild<gtk::Stack>,
     #[template_child]
-    pub auto_start_switch: TemplateChild<gtk::Switch>,
-    #[template_child]
     pub desktop_paths_view: TemplateChild<gtk::TextView>,
     #[template_child]
     pub desktop_paths_edit_button: TemplateChild<gtk::Button>,
@@ -77,7 +75,6 @@ impl ApplicationWindowImpl for SettingsWindow {}
 impl SettingsWindow {
     /// 集中配置回调信号
     fn setup_callbacks(&self) {
-        self.auto_start_switch_state_callback();
         self.desktop_paths_edit_button_clicked_callback();
         self.desktop_paths_cancel_button_clicked_callback();
         self.desktop_paths_save_button_clicked_callback();
@@ -100,22 +97,6 @@ impl SettingsWindow {
         let exec_path = SystemEnv::get_executable_path();
         let hint_label = format!("{} --toggle", exec_path);
         self.hint_label_entry.set_text(hint_label.as_str());
-    }
-
-
-    #[deprecated(
-        since = "1.0.0",
-        note = "由用户自定义快捷键启动，不提供自动启动"
-    )]
-    fn auto_start_switch_state_callback(&self) {
-        self.auto_start_switch.connect_state_set(move |_, state| {
-            if state {
-                println!("设置开机时自动启动……");
-            } else {
-                println!("取消开机时自动启动……");
-            }
-            Propagation::Proceed
-        });
     }
 
     /// 编辑按钮点击时-信号
@@ -316,12 +297,6 @@ impl SettingsWindow {
 
     /// 配置绑定关系
     fn setup_bind(&self, config_object: &ConfigDataObject) {
-        let auto_start_switch = self.auto_start_switch.get();
-        config_object
-            .bind_property("auto-start-at-boot", &auto_start_switch, "active")
-            .sync_create()
-            .bidirectional()
-            .build();
         let desktop_paths_view = self.desktop_paths_view.get();
         config_object
             .bind_property("desktop-scan-path", &desktop_paths_view, "buffer")
