@@ -10,7 +10,7 @@ homepage = "https://github.com/zhoujing2023/jz-launcher"
 repository = "https://github.com/zhoujing2023/jz-launcher"
 
 [dependencies]
-launcher-core = {path = "../launcher-core"}
+launcher-core = {path = "../launcher-core",version = "1.0.0"}
 gtk = { version = "0.11.4", package = "gtk4", features = ["v4_22"] }
 glib = "0.22.8"
 adw = { version = "0.9.1", package = "libadwaita", features = ["v1_9"] }
