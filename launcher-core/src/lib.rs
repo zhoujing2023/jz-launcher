@@ -4,6 +4,7 @@ mod app_usage;
 mod env;
 mod model;
 mod search_engine;
+mod str_util;
 
 pub use app_loader::AppLoader;
 pub use app_runner::AppRunner;

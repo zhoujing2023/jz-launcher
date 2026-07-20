@@ -1,14 +1,14 @@
+use crate::str_util::StrUtil;
 use crate::env::Env;
 use crate::model::{AppEntry, Apps};
 use std::collections::HashMap;
-use std::fs::{read_dir, read_to_string, DirEntry};
+use std::fs::{DirEntry, read_dir, read_to_string};
 use std::path::PathBuf;
 
 /// 应用程序加载器
 pub struct AppLoader;
 
 impl AppLoader {
-
     /// 默认 desktop 路径
     pub fn default_desktop_scan_paths(env: &Env) -> Vec<PathBuf> {
         vec![
@@ -155,14 +155,27 @@ impl AppLoader {
                     search_key.push_str(default_name);
                     search_key.push(',');
                     app_entry.name = default_name.to_string();
+
+                    // 如果名称中存在中文则再存储一份拼音
+                    if let Some(pinyin) = Self::parse_chinese_str_to_pinyin(default_name) {
+                        search_key.push_str(&pinyin);
+                        search_key.push(',');
+                    }
                 }
+
+                // 获取当前环境语言的名称
                 if !is_find_env_name {
-                    // 获取当前环境语言的名称
                     if let Some(cur_env_name) = line.strip_prefix(env_name_prefix) {
                         search_key.push_str(cur_env_name);
                         search_key.push(',');
                         app_entry.name = cur_env_name.to_string();
                         is_find_env_name = true;
+
+                        // 如果名称中存在中文则再存储一份拼音
+                        if let Some(pinyin) = Self::parse_chinese_str_to_pinyin(cur_env_name) {
+                            search_key.push_str(&pinyin);
+                            search_key.push(',');
+                        }
                     }
                 }
             }
@@ -214,5 +227,16 @@ impl AppLoader {
         }
         app_entry.desktop_file = String::from(filename);
         Some(app_entry)
+    }
+
+    /// 将中文字符解析为拼音
+    fn parse_chinese_str_to_pinyin(content: &str) -> Option<String> {
+        if StrUtil::contains_chinese(content) {
+            let pinyin = StrUtil::parse_pinyin(content);
+            if !pinyin.is_empty() {
+                return Some(pinyin);
+            }
+        }
+        None
     }
 }
